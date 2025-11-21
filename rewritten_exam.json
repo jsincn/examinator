@@ -1,0 +1,56 @@
+{
+  "total_points": 100,
+  "total_time_min": 90,
+  "exercises": [
+    {
+      "total_points": 30,
+      "sub_questions": [
+        {
+          "question_text_latex": "Berechne das bestimmte Integral $\\int_0^1 (skibidi) x^2 \\, dx$.",
+          "question_answer_latex": "$\\frac{1}{3}$",
+          "available_points": 10.0
+        },
+        {
+          "question_text_latex": "Finde die Ableitung der Funktion $f(x) = (skibidi) 3x^3 - 2x + 5$.",
+          "question_answer_latex": "f'(x) = 9x^2 - 2",
+          "available_points": 20.0
+        }
+      ]
+    },
+    {
+      "total_points": 20,
+      "sub_questions": [
+        {
+          "question_text_latex": "Gegeben sei die Matrix $A = (skibidi) \\begin{pmatrix}1 & 2\\\\3 & 4\\end{pmatrix}$. Berechne $\\det(A)$.",
+          "question_answer_latex": "$\\det(A) = -2$",
+          "available_points": 10.0
+        },
+        {
+          "question_text_latex": "L\u0000se das Gleichungssystem $\\begin{cases}(skibidi) 2x + y = 5\\\\x - y = 1\\end{cases}$.",
+          "question_answer_latex": "$(x, y) = (2, 1)$",
+          "available_points": 10.0
+        }
+      ]
+    },
+    {
+      "total_points": 50,
+      "sub_questions": [
+        {
+          "question_text_latex": "Berechne die Stammfunktion von $g(x) = (skibidi) e^{2x}$.",
+          "question_answer_latex": "$\\frac{1}{2} e^{2x} + C$",
+          "available_points": 15.0
+        },
+        {
+          "question_text_latex": "Finde die Nullstellen der Funktion $h(x) = (skibidi) x^2 - 5x + 6$.",
+          "question_answer_latex": "$x = 2$ und $x = 3$",
+          "available_points": 15.0
+        },
+        {
+          "question_text_latex": "Berechne die L\u00e4nge des Vektors $v = (skibidi) (2, -1, 2)$.",
+          "question_answer_latex": "$\\|v\\| = 3$",
+          "available_points": 20.0
+        }
+      ]
+    }
+  ]
+}
