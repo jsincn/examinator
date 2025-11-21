@@ -1,4 +1,6 @@
 import streamlit as st
+from data_model import Exam
+
 
 # Configure page
 st.set_page_config(layout="wide")
@@ -22,3 +24,5 @@ with right_col:
         # Add your file processing logic here
     else:
         st.info("Please upload a file to get started")
+
+st.write(Exam.model_json_schema())
