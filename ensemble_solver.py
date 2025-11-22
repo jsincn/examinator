@@ -11,6 +11,7 @@ import re
 import time
 import logging
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional, Tuple, Any, Union
 from pathlib import Path
 from dotenv import load_dotenv
@@ -451,21 +452,48 @@ class EnsembleCoordinator:
                 print(f"{'='*60}")
                 print(f"Problem: {current_problem}\n")
             
-            # Get solutions from all three solvers
+            # Get solutions from all three solvers in parallel
             solver_results = []
-            for solver in self.solvers:
-                if verbose:
-                    print(f"Querying {solver.name}...")
+            if verbose:
+                print("Querying all solvers in parallel...")
+            
+            def solve_with_solver(solver):
+                """Helper function to solve with a solver and return result."""
+                try:
+                    answer, explanation = solver.solve(current_problem, is_latex=is_latex)
+                    return {
+                        'solver': solver.name,
+                        'answer': answer,
+                        'explanation': explanation,
+                        'success': True
+                    }
+                except Exception as e:
+                    logger.error(f"Error in {solver.name}: {e}")
+                    return {
+                        'solver': solver.name,
+                        'answer': "ERROR",
+                        'explanation': f"Error occurred: {str(e)}",
+                        'success': False
+                    }
+            
+            # Execute all solver calls in parallel
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                future_to_solver = {
+                    executor.submit(solve_with_solver, solver): solver 
+                    for solver in self.solvers
+                }
                 
-                answer, explanation = solver.solve(current_problem, is_latex=is_latex)
-                solver_results.append({
-                    'solver': solver.name,
-                    'answer': answer,
-                    'explanation': explanation
-                })
-                
-                if verbose:
-                    print(f"  Answer: {answer}")
+                # Collect results as they complete
+                for future in as_completed(future_to_solver):
+                    result = future.result()
+                    solver_results.append(result)
+                    if verbose:
+                        status = "✓" if result['success'] else "✗"
+                        answer_preview = result['answer'][:80] + "..." if len(result['answer']) > 80 else result['answer']
+                        print(f"  {status} {result['solver']}: {answer_preview}")
+            
+            # Sort results to maintain consistent order (Solver 1, 2, 3)
+            solver_results.sort(key=lambda x: x['solver'])
             
             # Check for direct agreement (fast, exact/normalized match)
             answers = [r['answer'] for r in solver_results]
