@@ -9,10 +9,10 @@ from data_model import ExamQuestion, SubQuestion
 
 
 SYSTEM_PROMPT_SUBQUESTION = """
-You rewrite a single sub-question.
-Input JSON contains: question_text_latex, question_answer_latex, available_points.
-Rewrite the wording and adjust numbers if needed but keep the same concept and difficulty.
-Update question_answer_latex accordingly.
+You generate a new single sub-question based on an old question you get provided.
+Input JSON contains: question_text_latex, question_answer_latex, available_points, variation (0-10).
+0 means only adjust numbers while keeping wording and task essentially identical; 10 means a completely new task while keeping the same difficulty and amount of work needed to solve.
+Rewrite according to the variation level and update question_answer_latex accordingly.
 Respond ONLY with JSON: {"question_text_latex": "...", "question_answer_latex": "..."}.
 """
 
@@ -54,12 +54,14 @@ def _rewrite_sub_question(
     model: str,
     temperature: float,
     client: OpenAI,
+    variation: int,
 ) -> SubQuestion:
     """Send only minimal sub-question content to the model and return rewritten fields."""
     payload = {
         "question_text_latex": sub_question.question_text_latex,
         "question_answer_latex": sub_question.question_answer_latex,
         "available_points": sub_question.available_points,
+        "variation": variation,
     }
 
     messages = [
@@ -95,16 +97,22 @@ def rewrite_exam_question(
     *,
     model: str = "gpt-4o-mini",
     temperature: float = 0.7,
+    variation: int = 5,
     client: Optional[OpenAI] = None,
 ) -> ExamQuestion:
     """Rewrite a single ExamQuestion instance and return the rewritten instance."""
     client = client or _client()
+    variation = max(0, min(variation, 10))
 
     rewritten_sub_questions = [
-        _rewrite_sub_question(sub_q, model=model, temperature=temperature, client=client)
+        _rewrite_sub_question(
+            sub_q,
+            model=model,
+            temperature=temperature,
+            client=client,
+            variation=variation,
+        )
         for sub_q in exam_question.sub_questions
     ]
 
     return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
-
-
