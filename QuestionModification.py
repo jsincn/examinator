@@ -16,6 +16,17 @@ Rewrite according to the variation level and update question_answer_latex accord
 Respond ONLY with JSON: {"question_text_latex": "...", "question_answer_latex": "..."}.
 """
 
+SYSTEM_PROMPT_TITLE_DESC = """
+You rewrite the title and description for a block of sub-questions.
+Input JSON contains: question_title, question_description_latex, variation (0-10), and the list of sub_questions with their texts and points.
+0 means keep title/description almost identical (only adjust numbers), 10 means completely new question while keeping difficulty aligned with the sub-questions.
+Respond ONLY with JSON: {"question_title": "...", "question_description_latex": "..."}.
+IMPORTANT:
+- Include the concrete givens/objects/parameters from the provided sub-questions or description (e.g., function definitions, constants, bounds).
+- Avoid generic phrases like "verbundene Schritte" or "connected steps"; be specific about what the block covers.
+- Keep it concise but informative for the subsequent sub-questions.
+"""
+
 
 def _load_env_files(paths: Iterable[Path]) -> None:
     """Minimal .env loader to avoid extra dependencies."""
@@ -56,6 +67,7 @@ def _rewrite_sub_question(
     client: OpenAI,
     variation: int,
     context_sub_questions: list[SubQuestion],
+    question_context: dict | None = None,
 ) -> SubQuestion:
     """Send only minimal sub-question content to the model and return rewritten fields."""
     payload = {
@@ -63,6 +75,7 @@ def _rewrite_sub_question(
         "question_answer_latex": sub_question.question_answer_latex,
         "available_points": sub_question.available_points,
         "variation": variation,
+        "question_context": question_context or {},
         "previous_sub_questions": [
             {
                 "question_text_latex": cq.question_text_latex,
@@ -113,6 +126,40 @@ def rewrite_exam_question(
     client = client or _client()
     variation = max(0, min(variation, 10))
 
+    def _rewrite_title_description() -> dict:
+        payload = {
+            "question_title": exam_question.question_title or "",
+            "question_description_latex": exam_question.question_description_latex
+            or "",
+            "variation": variation,
+            "sub_questions": [
+                {
+                    "question_text_latex": sq.question_text_latex,
+                    "available_points": sq.available_points,
+                }
+                for sq in exam_question.sub_questions
+            ],
+        }
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT_TITLE_DESC},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
+        ]
+        completion = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            response_format={"type": "json_object"},
+        )
+        content = completion.choices[0].message.content
+        if not content:
+            return {
+                "question_title": exam_question.question_title,
+                "question_description_latex": exam_question.question_description_latex,
+            }
+        return json.loads(content)
+
+    # First rewrite title/description to capture the starting context.
+    title_desc = _rewrite_title_description()
     rewritten_sub_questions: list[SubQuestion] = []
     for sub_q in exam_question.sub_questions:
         rewritten_sub_questions.append(
@@ -124,7 +171,29 @@ def rewrite_exam_question(
                 variation=variation,
                 # Use already rewritten predecessors as context to keep the block coherent.
                 context_sub_questions=rewritten_sub_questions,
+                # Pass rewritten title/description to each sub-question.
+                question_context={
+                    "question_title": title_desc.get(
+                        "question_title", exam_question.question_title
+                    ),
+                    "question_description_latex": title_desc.get(
+                        "question_description_latex",
+                        exam_question.question_description_latex,
+                    ),
+                },
             )
         )
 
-    return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
+    return _copy_model(
+        exam_question,
+        update={
+            "sub_questions": rewritten_sub_questions,
+            "question_title": title_desc.get(
+                "question_title", exam_question.question_title
+            ),
+            "question_description_latex": title_desc.get(
+                "question_description_latex",
+                exam_question.question_description_latex,
+            ),
+        },
+    )
