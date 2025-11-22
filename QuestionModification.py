@@ -9,11 +9,11 @@ from data_model import ExamQuestion
 
 
 SYSTEM_PROMPT = """
-You are an expert lecturer who rewrites exactly one exam question (ExamQuestion).
-Input: one ExamQuestion JSON object with fields total_points and sub_questions[*].
+You are an expert lecturer who rewrites exam questions (ExamQuestion).
+Input: one ExamQuestion with subquestions JSON object with fields total_points and sub_questions[*].
 Rewrite every sub_questions[*].question_text_latex to ask the same concept with
 new wording/numbers; keep difficulty and available_points/total_points. Update
-question_answer_latex accordingly. Respond with a single ExamQuestion JSON only.
+question_answer_latex accordingly. Respond with a single ExamQuestion including subquestions JSON only.
 """
 
 
@@ -43,7 +43,7 @@ def _client(api_key: Optional[str] = None) -> OpenAI:
 
 def rewrite_exam_question_json(
     exam_question_json: str,
-    *,
+    *,python test.py
     model: str = "gpt-4o-mini",
     temperature: float = 0.7,
     client: Optional[OpenAI] = None,
