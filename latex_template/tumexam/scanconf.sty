@@ -1,0 +1,147 @@
+%% scanconf.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/scanconf}
+
+\@ifundefined{AddToHook}{%
+	\RequirePackage{everypage}
+}
+
+\RequirePackage{tumexam/examconf}
+\RequirePackage{tumexam/creditbox}
+\RequirePackage{tumexam/jobname}
+
+\checkjobname{scanconf}
+\ifscanconf
+	\begin{document}
+	\newwrite\scanconf@file
+	\immediate\openout\scanconf@file=\jobname.yml
+	\immediate\write\scanconf@file{title: >-}
+	\immediate\write\scanconf@file{ \unexpanded\expandafter{\thetitle}}
+	\immediate\write\scanconf@file{type: \unexpanded\expandafter{\thetype}}
+	\immediate\write\scanconf@file{module: \unexpanded\expandafter{\themodule}}
+	\immediate\write\scanconf@file{startdate: \getdateyear{examstartdate}-\twodigit{\getdatemonth{examstartdate}}-\twodigit{\getdateday{examstartdate}}\@secondoftwo{}{ } \the@starttime:00}
+	\immediate\write\scanconf@file{enddate: \getdateyear{examstopdate}-\twodigit{\getdatemonth{examstopdate}}-\twodigit{\getdateday{examstopdate}}\@secondoftwo{}{ } \the@stoptime:00}
+	\immediate\write\scanconf@file{lang: \localetext{english}{german}}
+%	FIXME: about to remove
+%	\immediate\write\scanconf@file{organization: \theorganization}
+	\immediate\write\scanconf@file{department: >-}
+	\immediate\write\scanconf@file{ \unexpanded\expandafter{\thedepartment}}
+	\immediate\write\scanconf@file{chair: >-}
+	\immediate\write\scanconf@file{ \unexpanded\expandafter{\thechair}}
+	\immediate\write\scanconf@file{examiner: >-}
+	\immediate\write\scanconf@file{ \unexpanded\expandafter{\theexaminer}}
+	\immediate\write\scanconf@file{correction_passes: \ifsinglepass1\else2\fi}
+	\immediate\write\scanconf@file{halfcredits: \ifhalfcredits true\else false\fi}
+	\immediate\write\scanconf@file{registrationsticker: \ifregistrationsticker true\else false\fi}
+	\immediate\write\scanconf@file{externalproblems: \ifexternalproblems true\else false\fi}
+	\immediate\write\scanconf@file{coversheet: \ifcoversheet true\else false\fi}
+	\immediate\write\scanconf@file{staple: \iftumexam@staple\iftumexam@booklet2\else1\fi\else0\fi}
+	\immediate\write\scanconf@file{serif: \ifserif true\else false\fi}
+	\immediate\write\scanconf@file{subproblemarabic: \ifsubproblemarabic true\else false\fi}
+	\immediate\write\scanconf@file{minimaltitlepage: \ifminimaltitlepage true\else false\fi}
+	\immediate\write\scanconf@file{toc: \iftoc true\else false\fi}
+	\immediate\write\scanconf@file{noproblemcredits: \ifnoproblemcredits true\else false\fi}
+	\immediate\write\scanconf@file{noproblem: \ifnoproblem true\else false\fi}
+	\immediate\write\scanconf@file{notitle: \ifnotitle true\else false\fi}
+	\immediate\write\scanconf@file{nocorrectorbox: \ifnocorrectorbox true\else false\fi}
+	\immediate\write\scanconf@file{pagewidth: \number\pdfpagewidth}
+	\immediate\write\scanconf@file{pageheight: \number\pdfpageheight}
+	\immediate\write\scanconf@file{boxwidth: \number\tumexam@cboxwidth}
+	\immediate\closeout\scanconf@file
+	\@ifundefined{AddToHook}{}{%
+		\PopDefaultHookLabel%
+		\PopDefaultHookLabel%
+	}
+	\end{document}
+\fi
+
+
+\newwrite\scanconf@file@pages
+\immediate\openout\scanconf@file@pages=\jobname-pages.csv
+\newwrite\scanconf@file@problems
+\immediate\openout\scanconf@file@problems=\jobname-problems.csv
+\newwrite\scanconf@file@boxes
+\immediate\openout\scanconf@file@boxes=\jobname-boxes.csv
+\newwrite\scanconf@file@pagecodes
+\immediate\openout\scanconf@file@pagecodes=\jobname-pagecodes.csv
+\newwrite\scanconf@file@problemboxes
+\immediate\openout\scanconf@file@problemboxes=\jobname-problemboxes.csv
+\newwrite\scanconf@file@registrationboxes
+\immediate\openout\scanconf@file@registrationboxes=\jobname-registrationboxes.csv
+
+\immediate\write\scanconf@file@pages{pagenum;landscape}
+\@ifundefined{AddToHook}{%
+	\AddEverypageHook{%
+		\write\scanconf@file@pages{\thepage;\iftumexam@landscape True\else False\fi}%
+	}
+}{%
+	\AddToHook{shipout/foreground}{%
+		\write\scanconf@file@pages{\thepage;\iftumexam@landscape True\else False\fi}%
+	}
+}
+
+\immediate\write\scanconf@file@problems{problem;subproblem;max_credits;calculation_function;pagenum;xpos;ypos}
+\newcommand{\scanconf@subproblem}[4]{%
+	\savepos%
+	\edef\scanconf@w@args{{#1}{#2}{#3}{#4}{\number\lastxpos}{\number\lastypos}}%
+	\expandafter\scanconf@subproblemi\scanconf@w@args%
+}
+\newcommand{\scanconf@subproblemi}[6]{%
+	\write\scanconf@file@problems{#1;#2;#3;#4;\thepage;#5;#6}%
+}
+
+\immediate\write\scanconf@file@boxes{box_id;value;pagenum;xpos;ypos}
+\newcommand{\scanconf@box}[2]{%
+	\savepos%
+	\edef\scanconf@w@args{{#1}{#2}{\number\lastxpos}{\number\lastypos}}%
+	\expandafter\scanconf@boxi\scanconf@w@args%
+}
+\newcommand{\scanconf@boxi}[4]{%
+	\write\scanconf@file@boxes{#1;#2;\thepage;#3;#4}%
+}
+
+\immediate\write\scanconf@file@pagecodes{corner;pagenum;xpos;ypos}
+\newcommand{\scanconf@pagecode}[1]{%
+	\savepos%
+	\edef\scanconf@w@args{{#1}{\number\lastxpos}{\number\lastypos}}%
+	\expandafter\scanconf@pagecodei\scanconf@w@args%
+}
+\newcommand{\scanconf@pagecodei}[3]{%
+	\write\scanconf@file@pagecodes{#1;\thepage;#2;#3}%
+}
+
+\immediate\write\scanconf@file@problemboxes{box_id;problem;subproblem;correction_pass}
+\newcommand{\scanconf@problembox}[4]{%
+	\edef\scanconf@w@args{{#1}{#2}{#3}{#4}}%
+	\expandafter\scanconf@problemboxi\scanconf@w@args%
+}
+\newcommand{\scanconf@problemboxi}[4]{%
+	\write\scanconf@file@problemboxes{#1;#2;#3;#4}%
+}
+
+\immediate\write\scanconf@file@registrationboxes{box_id;position}
+\newcommand{\scanconf@registrationbox}[2]{%
+	\edef\scanconf@w@args{{#1}{#2}}%
+	\expandafter\scanconf@registrationboxi\scanconf@w@args%
+}
+\newcommand{\scanconf@registrationboxi}[2]{%
+	\write\scanconf@file@registrationboxes{#1;#2}%
+}
+
+\endinput

@@ -1,0 +1,161 @@
+%% creditbox.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2020 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/creditbox}
+
+\RequirePackage{tikz}
+\RequirePackage[hidelinks]{hyperref}
+
+\RequirePackage{tumexam/examconf}
+
+
+\newlength{\tumexam@cboxwidth}
+\setlength{\tumexam@cboxwidth}{3.5714mm}
+
+\tikzstyle{tumexam@style@cbox}=[
+	rectangle,
+	fill=white,
+	draw=black,
+	line width=0.2\tumexam@cboxwidth,
+	minimum width=\tumexam@cboxwidth,
+	minimum height=\tumexam@cboxwidth,
+	inner sep=0pt,
+]
+
+\tikzstyle{tumexam@style@cboxtext}=[
+	rectangle,
+	minimum width=\tumexam@cboxwidth,
+	minimum height=\tumexam@cboxwidth,
+	inner sep=0pt,
+	font=\footnotesize,
+]
+
+\newcounter{problem}
+\newcounter{subproblem}[problem]
+\newcounter{subproblemsolutionbox}[subproblem]
+
+\newcommand{\tumexam@crossbox}[4]{
+	\node[inner sep=0pt] at (#1,#2) {\hspace{-1mm}\CheckBox[name=#3,width=\tumexam@cboxwidth,height=\tumexam@cboxwidth,checkboxsymbol=\ding{53},bordercolor=,backgroundcolor=,borderwidth=0pt,align=1,color=0 0.3725 0.7765]{\relax}};
+	\node[tumexam@style@cbox] at (#1,#2) {\scanconf@box{#3}{#4}};
+}
+
+\ifsubproblemarabic
+	\newcommand{\problemcrossbox}[5][1]{
+		\tumexam@crossbox{#2}{#3}{p\arabic{problem}.\arabic{subproblem}.#1#5}{#4}
+		\scanconf@problembox{p\arabic{problem}.\arabic{subproblem}.#1#5}{\arabic{problem}}{\arabic{subproblem}}{#1}
+	}
+\else
+	\newcommand{\problemcrossbox}[5][1]{
+		\tumexam@crossbox{#2}{#3}{p\arabic{problem}\alph{subproblem}#1#5}{#4}
+		\scanconf@problembox{p\arabic{problem}\alph{subproblem}#1#5}{\arabic{problem}}{\alph{subproblem}}{#1}
+	}
+\fi
+
+\newif\iftumexam@cbox@right
+
+\newcommand{\tumexam@cboxline}[4]{
+	\problemcrossbox[1]{0}{#2}{#1}{#4}
+	\ifsinglepass\else
+		\problemcrossbox[2]{1.1\tumexam@cboxwidth}{#2}{#1}{#4}
+	\fi
+	\begin{pgfinterruptboundingbox}
+		\iftumexam@cbox@right
+			\ifsinglepass
+				\node[tumexam@style@cboxtext] at (1.2\tumexam@cboxwidth,#2) {#3};
+			\else
+				\node[tumexam@style@cboxtext] at (2.3\tumexam@cboxwidth,#2) {#3};
+			\fi
+		\else
+			\node[tumexam@style@cboxtext] at (-1.2\tumexam@cboxwidth,#2) {#3};
+		\fi
+	\end{pgfinterruptboundingbox}
+}
+
+\newcommand{\tumexam@cbox}[1]{%
+	\begin{tikzpicture}
+		\edef\tumexam@cbox@max{#1}
+		\ifhalfcredits
+			\def\tumexam@cbox@step{0.5}
+		\else
+			\def\tumexam@cbox@step{1}
+		\fi
+		\foreach \x [count=\y from 0] in {0,\tumexam@cbox@step,...,#1}{
+			\edef\z{\x}
+			\ifhalfcredits
+				\ifodd\y
+					\ifx\z\tumexam@cbox@max
+						\ifx\z\tumexam@cbox@step
+							\def\z{\textonehalf}
+						\else
+							\def\z{}
+						\fi
+					\else
+						\def\z{}
+					\fi
+				\fi
+			\fi
+			\tumexam@cboxline{\x}{-\y\tumexam@cboxwidth}{\z}{c\y}
+		}
+	\end{tikzpicture}%
+}
+
+\newcommand{\creditbox}{%
+	\@ifstar{\tumexam@cbox@rightfalse\creditbox@i}{\tumexam@cbox@righttrue\creditbox@i}%
+}
+\newcommand{\creditbox@i}[2][0]{%
+	\node[rotate=#1,rectangle,fill=black,below,inner sep=0.05\tumexam@cboxwidth,align=center]
+	at (0,0) {\tumexam@cbox{#2}};
+}
+
+\begingroup
+	\def\scanconf@box#1#2{}
+	\def\scanconf@problembox#1#2#3#4{}
+	\setbox\@tempboxa\hbox{%
+		\begin{tikzpicture}
+			\creditbox{1}
+		\end{tikzpicture}%
+	}
+	\xdef\creditboxwidth{\the\wd\@tempboxa}
+\endgroup
+
+
+\newcommand{\registrationnumberbox}{
+	\begin{tikzpicture}[baseline=2.8\tumexam@cboxwidth]
+		\node[rectangle,
+			draw=black,
+			minimum width=12\tumexam@cboxwidth,
+			minimum height=2\tumexam@cboxwidth,
+		] at (5.25\tumexam@cboxwidth,1.8\tumexam@cboxwidth) {};
+		\foreach \xpos [count=\x from 1] in {0,1.5,...,10.5}{
+			\node at (\xpos\tumexam@cboxwidth,1\tumexam@cboxwidth) {\_\_};
+		}
+		\foreach \ypos [count=\y from 0] in {9,0,1,...,8}{
+			\node[tumexam@style@cboxtext] at (-1.5\tumexam@cboxwidth,-\ypos\tumexam@cboxwidth) {\y};
+			\foreach \xpos [count=\x from 1] in {0,1.5,...,10.5}{
+				\tumexam@crossbox{\xpos\tumexam@cboxwidth}{-\ypos\tumexam@cboxwidth}{r\x\y}{\y}
+				\scanconf@registrationbox{r\x\y}{\x}
+			}
+		}
+		\node[right,rotate=90,inner sep=0pt] at (12\tumexam@cboxwidth, -9.6\tumexam@cboxwidth) {\tiny\registrationname};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(0,-9\tumexam@cboxwidth+0.04em)$) {\huge\texttimes};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}%
+}
+
+\endinput

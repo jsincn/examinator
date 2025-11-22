@@ -1,0 +1,171 @@
+%% seatplan.tex
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\usepackage[pagestyles,extramarks]{titlesec}
+\usepackage{csvsimple}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{xstring}
+
+\usepackage{tumexam/examconf}
+\usepackage{tumexam/unicode}
+
+\usepackage{tumfonts}
+
+
+\newmarkset{student}
+\newextramark{student}{\studenttitle}
+\def\seattitle{}
+
+\newpagestyle{seatplanbyname}{%
+	\sethead{%
+	}{%
+		\vbox to 15mm {%
+			\null\hfill%
+			\hbox{%
+				\normalfont\textbf{\room},\ %
+				\firstextramarks{student}\studenttitle\ --\ \botextramarks{student}\studenttitle%
+			}%
+			\hfill\null%
+			\vfill%
+			\hbox{\colorbox{white}{%
+				\hbox to 80mm {\textbf{\strut\lastnamename}\hfill}%
+				\hbox to 80mm {\textbf{\strut\firstnamename}\hfill}%
+				\hbox to 28mm {\textbf{\strut\rowname}~/~\textbf{\seatname}\hfill}%
+			}}%
+			\hrule%
+		}%
+	}{%
+	}
+
+	\setfoot{%
+	}{%
+		\normalfont -- \pagename~\thepage\ / \pageref{\seatplan} --%
+	}{%
+	}
+}
+
+\newpagestyle{seatplanbymatrikel}{%
+	\sethead{%
+	}{%
+		\vbox to 15mm {%
+			\null\hfill%
+			\hbox{%
+				\normalfont\textbf{\room},\ %
+				\firstextramarks{student}\studenttitle\ --\ \botextramarks{student}\studenttitle%
+			}%
+			\hfill\null%
+			\vfill%
+			\hbox{\colorbox{white}{%
+				\hbox to 160mm {\textbf{\strut\registrationname}\hfill}%
+				\hbox to 28mm {\textbf{\strut\rowname}~/~\textbf{\seatname}\hfill}%
+			}}%
+			\hrule%
+		}%
+	}{%
+	}
+
+	\setfoot{%
+	}{%
+		\normalfont -- \pagename~\thepage\ / \pageref{\seatplan} --%
+	}{%
+	}
+}
+
+
+\geometry{%
+	paper=a4paper,
+	top=20mm,
+	left=10mm,
+	right=10mm,
+	bottom=15mm,
+	marginparsep=0pt,
+	headheight=15mm,
+	headsep=0mm,
+	footskip=10mm,
+	twoside=true,
+	columnsep=0pt,
+}%
+
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\setlength{\fboxsep}{1mm}
+
+
+\newcommand{\rowcolorwhite}{%
+	\def\rowcolor{white}%
+	\def\rowcolornext{\rowcolorgray}%
+}
+\newcommand{\rowcolorgray}{%
+	\def\rowcolor{black!20}%
+	\def\rowcolornext{\rowcolorwhite}%
+}
+\def\rowcolornext{\rowcolorwhite}
+
+
+\newif\ifseatplanbymatrikel\seatplanbymatrikelfalse
+
+\begin{document}
+
+\edef\roomlist{}
+\csvreader[head,separator=semicolon]{\listsfolder/rooms.csv}{shortname=\room,seatplan=\seatplan,seatplanbymatrikel=\seatplanbymatrikel}{%
+	\edef\roomlist{\roomlist,\room/\seatplan/\seatplanbymatrikel}%
+}
+
+\foreach \room/\seatplan/\seatplanbymatrikel in \roomlist {%
+	\IfEq{\seatplanbymatrikel}{True}{\seatplanbymatrikeltrue}{\seatplanbymatrikelfalse}%
+	\ifseatplanbymatrikel
+		\pagestyle{seatplanbymatrikel}
+	\else
+		\pagestyle{seatplanbyname}
+	\fi
+	\ifx\seatplan\empty\else%
+	\csvreader[head,separator=semicolon]{\listsfolder/\seatplan}{matrikel=\matrikel,srid=\srid,pic=\studentimage,lastname=\lastname,firstname=\firstname,rowlabel=\row,seatlabel=\seat,room=\roomx}{%
+		\ifseatplanbymatrikel
+			\def\studenttitle{\matrikel}%
+		\else
+			\def\studenttitle{\lastname}%
+		\fi
+		\rowcolornext%
+		\hbox{\colorbox{\rowcolor}{%
+			\ifseatplanbymatrikel
+				\hbox to 160mm {\strut\matrikel\hfill}%
+			\else
+				\hbox to 80mm {\strut\lastname\hfill}%
+				\hbox to 80mm {\strut\firstname\hfill}%
+			\fi
+			\hbox to 28mm {\strut\row~/~\seat\hfill}%
+		}}%
+		\extramark{student}%
+	}%
+	\label{\seatplan}%
+	\vfill%
+	\clearpage%
+	\begingroup%
+	\pagestyle{empty}%
+	\cleardoublepage%
+	\endgroup%
+	\setcounter{page}{1}%
+	\fi%
+}%
+
+\end{document}

@@ -1,0 +1,58 @@
+\problem{Single stream point-to-point MIMO on multiple carriers}
+
+We consider the communication scenario in Figure~\ref{fig:mimo} where multiple data streams $s_k$ are transmitted on $K$ subcarriers, one stream per carrier.
+The signals $s_k$ are mutually independent and Gaussian distributed with zero mean and unit variance, i.\,e., $s_k \sim \mathcal N_{\mathbb C}(0,1)$.
+The transmitter and receiver have $N$ and $M$ antennas, respectively.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=.66\hsize]{figures/problem_example1-figure}
+	\caption{Single-stream point-to-point MIMO}
+	\label{fig:mimo}
+\end{figure}
+The signal $s_k$ denotes the data stream transmitted on carrier $k$ which is precoded with $\mathbit p_k \in \mathbb C^N$ and transmitted via the channel $\mathbit H_k \in \mathbb C^{M\times N}$.
+
+The received signal $\mathbit x_k \in \mathbb C^M$ is perturbed with Gaussian noise $\mathbit \eta_k \sim \mathcal N_{\mathbb C}(\mathbit 0_M, \mathbit C_k)$ with noise covariance $\mathbit C_k \in \mathbb C^{M\times M}$.
+Filtering with the receive filter $\mathbit g_k \in \mathbb C^M$ yields the received signal $\hat{s}_k$.
+The sum transmit power across all carriers is bounded by
+\begin{align}
+	\sum_{k=1}^K \opn{E}\left [ \lVert\mathbit y_k\rVert_2^2 \right ] \leq
+	E_{\opn{Tx}}.
+	\label{powerconstraint}
+\end{align}
+
+In the first part of this problem we will consider above system without equalizer.
+
+\subproblem*{1}
+Give an expression for $\mathbit x_k$ as a function of $s_k$ and $\mathbit \eta_k$.
+
+\begin{solutionbox}[3cm]
+	\begin{align*}
+		\mathbit x_k = \mathbit H_k \mathbit p_k s_k + \mathbit \eta_k \credit
+	\end{align*}
+\end{solutionbox}
+
+\subproblem*{1}
+Rewrite the power constraint \eqref{powerconstraint} as a function of $\mathbit p_k$.
+
+\begin{solutionbox}[4cm]
+	\begin{align*}
+		\sum_{k=1}^K \opn{E}\left [ \lVert\mathbit y_k\rVert_2^2 \right ]
+			= \sum_{k=1}^K \opn E \left [ s_k^*s_k \mathbit p_k^{\opn H} \mathbit
+			p_k \right ]
+			= \sum_{k=1}^K \mathbit p_k^{\opn H} \mathbit p_k \leq E_{\opn{Tx}}
+			\credit
+	\end{align*}
+\end{solutionbox}
+
+\subproblem{2}
+Calculate the covariance matrix $\mathbit C_{\mathbit x_k}$ of the received signal $\mathbit x_k$.
+
+\begin{solutionbox}[4cm]
+	\begin{align*}
+		\mathbit C_{\mathbit x_k}
+			= \opn E \left [\mathbit x_k \mathbit x_k^{\opn H} \right ] \credit
+			= \mathbit H_k \mathbit p_k \mathbit p_k^{\opn H}\mathbit H_k^{\opn H}
+			+ \mathbit C_k \credit
+	\end{align*}
+\end{solutionbox}
+

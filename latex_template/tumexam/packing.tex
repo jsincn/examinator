@@ -1,0 +1,92 @@
+%% packing.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\usepackage[pagestyles,extramarks]{titlesec}
+\usepackage{csvsimple}
+
+\usepackage{tumexam/examconf}
+
+\usepackage{tumfonts}
+\usepackage{tumcontact}
+
+
+\newpagestyle{packing}{%
+	\sethead{%
+	}{%
+		\TUMheader[black]{10mm}%
+	}{%
+	}
+
+	\setfoot{%
+	}{%
+	}{%
+	}
+}
+
+\geometry{%
+	paper=a4paper,
+	top=30mm,
+	left=10mm,
+	right=10mm,
+	bottom=30mm,
+	marginparsep=0pt,
+	headheight=10mm,
+	headsep=10mm,
+	footskip=20mm,
+	twoside=false,
+	columnsep=0pt,
+}%
+\pagestyle{packing}
+
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+
+
+\begin{document}
+
+\csvreader[head,separator=semicolon]{\listsfolder/rooms.csv}{shortname=\room}{%
+	\hrule
+	\begin{center}
+		\Huge\bfseries\room
+	\end{center}
+	\hrule
+
+	\vskip1cm
+	\Huge
+	\vfill
+	\begin{itemize}
+		\setlength{\itemsep}{10mm}
+		\item \localetext{Exams}{Klausuren}\ ( \rule[-1mm]{3cm}{1pt} \localetext{copies}{Stück})
+		\item \attendeelistname
+		\item \seatplanname
+		\item \protocolname
+		\item \samplesolutionname
+		\item \localetext{Chalk}{Kreide}
+		\item \localetext{Adhesive tape}{Tesafilm}
+		\item \localetext{Stapler}{Tacker}
+		\item \localetext{Scissors}{Schere}
+	\end{itemize}
+	\vfill
+	\clearpage
+}
+
+\end{document}

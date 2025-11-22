@@ -1,0 +1,86 @@
+\problem{Finite extension fields}
+
+
+Given the finite filed $\mathbb F_p$, we consider finite extension fields
+\begin{align}
+	F_{q}[x] = \left \{ \sum_{i=0}^{n-1} a_i x^i \, \bigg| \, a_i \in \mathbb{F}_p \right \}.
+\end{align}
+
+
+\subproblem*{1}
+State the conditions on $p$, $q$, and $n$ such that a finite extension field $F_q[x]$ exists.
+
+\begin{solutionbox}[4cm]
+If $p\in\mathbb{N}$ is prime \hcredit, $F_q[x]$ exists for any $q=p^n$ with $n\in \mathbb{N}$. \hcredit
+\end{solutionbox}
+
+
+\subproblem*{1}
+What is a \emph{generator} of $\mathbb F_p$?
+
+\begin{solutionbox}[4cm]
+Some $g\in\mathbb F_p$ is called \emph{generator} if $\bigcup \left
+\{g^i: i=0,1,\ldots,n-1\right\} = \mathbb F_p \backslash\{0\}$. \credit
+\end{solutionbox}
+
+
+\vskip2ex
+We now consider the finite extension field $F_{16}[x]$ built upon $\mathbb F_2=\{0,1\}$.
+
+\subproblem*{2}
+State two reasons why this extensions field is of particular interest with respect to network coding.
+
+\begin{solutionbox}[4cm]
+\begin{itemize}
+	\item The probability of two random vector $\mathbit x,\mathbit y \in
+	F_q^N[x]$ is low for $N\geq 4$. \credit
+	\item The field allows for very efficient implementations. \credit
+	\item Symbols are represented by a nibble, i.\,e., two symbols make up an octet.
+\end{itemize}
+\end{solutionbox}
+
+
+\subproblem*{2}
+List all elements of $F_{16}[x]$.
+
+\begin{solutionbox}[4cm]
+\begin{align*}
+	F_8[x] = \{ & 0,1,\\
+		& x,x+1,\\
+		& x^2,x^2+1,x^2+x,x^2+x+1\\
+		& x^3,x^3+1,x^3+x,x^3+x+1,x^3+x^2,x^3+x^2+1,x^3+x^2+x,x^3+x^2+x+1 \}
+\end{align*}
+\end{solutionbox}
+
+\clearpage
+\subproblem*{2}
+Explain why a reduction polynomial $r(x)$ is needed for the multiplicative group of $F_q[x]$.
+
+\begin{solutionbox}[4cm]
+Multiplication of $c=a\cdot b$ of $a,b\in F_q[x]$ may result in $c\notin F_q[x]$. \credit\\
+Therefore, multiplication is defined as
+\begin{align*}
+	c = a\cdot b \opn{mod} r \quad \forall a,b\in F_q[x]. \credit
+\end{align*}
+\end{solutionbox}
+
+
+\subproblem{2}
+State the conditions a polyomial $r(x)$ has to fulfill to be a suitable reduction polyomial.
+
+\begin{solutionbox}[4cm]
+\begin{itemize}
+	\item $r \neq a\cdot b$ $\forall a,b\in F_q[x]$ \credit
+	\item $\opn{deg}(r) = n+1$ for $q=2^n$ \credit
+\end{itemize}
+\end{solutionbox}
+
+\subproblem{3}
+Find a reduction polynomial $r(x)\neq x^4+1$ for $F_q[x]$.
+
+\begin{solutionbox}[6cm]
+$x^4+1$
+
+\fixme{Rechenweg fehlt ($\leftarrow$ this is a \texttt{\textbackslash{}fixme}, not a comment for correctors)}
+\end{solutionbox}
+
