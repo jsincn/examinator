@@ -16,6 +16,17 @@ Rewrite according to the variation level and update question_answer_latex accord
 Respond ONLY with JSON: {"question_text_latex": "...", "question_answer_latex": "..."}.
 """
 
+SYSTEM_PROMPT_ONE_GO = """
+You rewrite an entire ExamQuestion in one step.
+Input JSON contains: total_points, question_title, question_description_latex, sub_questions[*], variation (0-10).
+0 means only adjust numbers while keeping wording and task identical; 10 means a completely different task(nothing to do with the old one) while keeping the same difficulty and workload.
+Rules:
+- Preserve structure and fields (total_points, question_title, question_description_latex, sub_questions with available_points, etc.).
+- Keep the number of sub_questions and their available_points intact.
+- Rewrite question_text_latex and question_answer_latex according to variation; title/description must align with the new sub-questions and include concrete givens/parameters.
+- Respond ONLY with valid JSON matching the ExamQuestion schema.
+"""
+
 
 def _load_env_files(paths: Iterable[Path]) -> None:
     """Minimal .env loader to avoid extra dependencies."""
@@ -130,3 +141,40 @@ def rewrite_exam_question(
         )
 
     return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
+
+
+def rewrite_exam_question_one_go(
+    exam_question: ExamQuestion,
+    *,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+    variation: int = 5,
+    client: Optional[OpenAI] = None,
+) -> ExamQuestion:
+    """
+    Rewrite a full ExamQuestion in a single LLM call (no per-subquestion iteration).
+    Preserves structure via the Pydantic model and returns a new ExamQuestion.
+    """
+    client = client or _client()
+    variation = max(0, min(variation, 10))
+
+    payload = exam_question.model_dump()
+    payload["variation"] = variation
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT_ONE_GO},
+        {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
+    ]
+
+    response = client.beta.chat.completions.parse(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        response_format=ExamQuestion,
+    )
+
+    parsed = response.choices[0].message.parsed
+    if not parsed:
+        raise RuntimeError("Failed to parse rewritten ExamQuestion from model response.")
+
+    return parsed
