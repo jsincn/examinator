@@ -55,6 +55,7 @@ def _rewrite_sub_question(
     temperature: float,
     client: OpenAI,
     variation: int,
+    context_sub_questions: list[SubQuestion],
 ) -> SubQuestion:
     """Send only minimal sub-question content to the model and return rewritten fields."""
     payload = {
@@ -62,6 +63,14 @@ def _rewrite_sub_question(
         "question_answer_latex": sub_question.question_answer_latex,
         "available_points": sub_question.available_points,
         "variation": variation,
+        "previous_sub_questions": [
+            {
+                "question_text_latex": cq.question_text_latex,
+                "question_answer_latex": cq.question_answer_latex,
+                "available_points": cq.available_points,
+            }
+            for cq in context_sub_questions
+        ],
     }
 
     messages = [
@@ -104,15 +113,18 @@ def rewrite_exam_question(
     client = client or _client()
     variation = max(0, min(variation, 10))
 
-    rewritten_sub_questions = [
-        _rewrite_sub_question(
-            sub_q,
-            model=model,
-            temperature=temperature,
-            client=client,
-            variation=variation,
+    rewritten_sub_questions: list[SubQuestion] = []
+    for sub_q in exam_question.sub_questions:
+        rewritten_sub_questions.append(
+            _rewrite_sub_question(
+                sub_q,
+                model=model,
+                temperature=temperature,
+                client=client,
+                variation=variation,
+                # Use already rewritten predecessors as context to keep the block coherent.
+                context_sub_questions=rewritten_sub_questions,
+            )
         )
-        for sub_q in exam_question.sub_questions
-    ]
 
     return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
