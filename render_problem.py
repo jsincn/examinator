@@ -1,4 +1,5 @@
 from jinja2 import Environment, FileSystemLoader
+from text_utils import strip_non_ascii
 from data_model import ExamQuestion
 import os
 import unicodedata
@@ -88,18 +89,31 @@ def latex_is_valid(latex_str: str) -> tuple[bool, str]:
             print(error_log)
             return False, error_log
     
-    
-def strip_non_ascii(text):
-    """Remove or replace non-ASCII characters with ASCII equivalents."""
-    if not text:
-        return text
-    
-    # First try to normalize to ASCII equivalents
-    normalized = unicodedata.normalize('NFKD', text)
-    # Encode to ASCII, replacing non-ASCII with closest equivalent or removing
-    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
-    return ascii_text
 
+def fix_latex_filter(text):
+    is_valid, error = latex_is_valid(text)
+    if is_valid:
+        return text
+    else:
+        print("Rendered LaTeX is not valid. Attempting to fix with LLM...")
+        fixed_latex = fix_latex_with_llm(text, error)
+        
+        max_attempts = 3
+        current_latex = fixed_latex
+        
+        for attempt in range(1, max_attempts + 1):
+            
+            is_valid, error = latex_is_valid(current_latex) if current_latex else (False, "")
+            if current_latex and is_valid:
+                print(f"LLM fixed the LaTeX successfully on attempt {attempt}.")
+                return current_latex
+            elif attempt < max_attempts:
+                print(f"Attempt {attempt} failed. Retrying...")
+                current_latex = fix_latex_with_llm(current_latex if current_latex else rendered_latex, error)
+            else:
+                print(f"LLM could not fix the LaTeX after {max_attempts} attempts. The output is not valid.")
+                return ""
+            
 def render_problem(exam_question: ExamQuestion, problem_number: int, template_path: str = "templates/problem_template.jinja2") -> str | None:
     """
     Render an ExamQuestion to LaTeX using the Jinja template.
@@ -118,30 +132,7 @@ def render_problem(exam_question: ExamQuestion, problem_number: int, template_pa
     
     env = Environment(loader=FileSystemLoader(template_dir))
     
-    # Add custom filter to handle escaped newlines
-    def fix_latex_filter(text):
-        is_valid, error = latex_is_valid(text)
-        if is_valid:
-            return text
-        else:
-            print("Rendered LaTeX is not valid. Attempting to fix with LLM...")
-            fixed_latex = fix_latex_with_llm(text, error)
-            
-            max_attempts = 3
-            current_latex = fixed_latex
-            
-            for attempt in range(1, max_attempts + 1):
-                
-                is_valid, error = latex_is_valid(current_latex) if current_latex else (False, "")
-                if current_latex and is_valid:
-                    print(f"LLM fixed the LaTeX successfully on attempt {attempt}.")
-                    return current_latex
-                elif attempt < max_attempts:
-                    print(f"Attempt {attempt} failed. Retrying...")
-                    current_latex = fix_latex_with_llm(current_latex if current_latex else rendered_latex, error)
-                else:
-                    print(f"LLM could not fix the LaTeX after {max_attempts} attempts. The output is not valid.")
-                    return ""
+
 
     
     env.filters['fix_latex_filter'] = fix_latex_filter

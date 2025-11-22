@@ -3,6 +3,9 @@ from data_model import MultipleChoiceExamQuestion
 import os
 import unicodedata
 
+from render_problem import fix_latex_filter
+from text_utils import strip_non_ascii
+
 def strip_non_ascii(text):
     """Remove or replace non-ASCII characters with ASCII equivalents."""
     if not text:
@@ -14,20 +17,6 @@ def strip_non_ascii(text):
     ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
     return ascii_text
 
-
-def strip_non_ascii(text: str) -> str:
-    """
-    Strip non-ASCII characters from a string, keeping only ASCII characters.
-    
-    Args:
-        text: Input string that may contain non-ASCII characters
-        
-    Returns:
-        String with only ASCII characters
-    """
-    if not text:
-        return text
-    return ''.join(char for char in text if ord(char) < 128)
 
 
 def render_mc_problem(exam_question: MultipleChoiceExamQuestion, problem_number: int, template_path: str = "templates/mc_problem_template.jinja2") -> str:
@@ -49,12 +38,8 @@ def render_mc_problem(exam_question: MultipleChoiceExamQuestion, problem_number:
     env = Environment(loader=FileSystemLoader(template_dir))
     
     # Add custom filter to handle non-ASCII characters
-    def fix_text(text):
-        if text:
-            return strip_non_ascii(text)
-        return text
     
-    env.filters['fix_text'] = fix_text
+    env.filters['fix_text'] = fix_latex_filter
     
     template = env.get_template(template_name)
     
