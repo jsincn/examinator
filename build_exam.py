@@ -1,6 +1,7 @@
 
 
 
+from QuestionModification import rewrite_exam_question
 from build_new_mp_questions import modify_mp_questions
 from data_model import Exam, MultipleChoiceExamQuestion
 from render_mc_problem import render_mc_problem
@@ -109,7 +110,8 @@ def build_exam(exam: Exam):
             new_problem = modify_mp_questions(problem)
             problem_latex = render_mc_problem(new_problem, problem_number=idx)
         else:
-            problem_latex = render_problem(problem, problem_number=idx)
+            new_problem = rewrite_exam_question(problem)
+            problem_latex = render_problem(new_problem, problem_number=idx)
         
         with open(problem_path, 'w') as f:
             f.write(problem_latex)

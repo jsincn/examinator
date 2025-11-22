@@ -10,6 +10,8 @@ from data_model import (
 from build_exam import build_exam
 from dotenv import load_dotenv
 
+from parsing_new import parse_exam_complete
+
 load_dotenv()
 
 
@@ -110,7 +112,9 @@ with left_col:
         if st.session_state.get("uploaded_file") != uploaded_file.name:
             with st.spinner("Building exam PDF..."):
 
-                exam = get_dummy_exam()
+                exam = parse_exam_complete(uploaded_file)
+
+                st.write(exam)
 
                 exam_path, solution_path = build_exam(exam)
 
@@ -142,6 +146,3 @@ with left_col:
                 file_name="solution.pdf",
                 mime="application/pdf",
             )
-
-
-st.write(ExamContent.model_json_schema())

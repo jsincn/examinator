@@ -1,6 +1,18 @@
 from jinja2 import Environment, FileSystemLoader
 from data_model import ExamQuestion
 import os
+import unicodedata
+
+def strip_non_ascii(text):
+    """Remove or replace non-ASCII characters with ASCII equivalents."""
+    if not text:
+        return text
+    
+    # First try to normalize to ASCII equivalents
+    normalized = unicodedata.normalize('NFKD', text)
+    # Encode to ASCII, replacing non-ASCII with closest equivalent or removing
+    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
+    return ascii_text
 
 def render_problem(exam_question: ExamQuestion, problem_number: int, template_path: str = "templates/problem_template.jinja2") -> str:
     """
@@ -19,6 +31,32 @@ def render_problem(exam_question: ExamQuestion, problem_number: int, template_pa
     template_name = os.path.basename(template_path)
     
     env = Environment(loader=FileSystemLoader(template_dir))
+    
+    # Add custom filter to handle escaped newlines
+    def fix_newlines(text):
+        if text:
+            # Strip non-ASCII characters first
+            text = strip_non_ascii(text)
+            # Replace literal \n with LaTeX line breaks
+            text = text.replace('\\n', '\n\n')
+            
+            # Fix unclosed itemize/enumerate environments
+            # Count opening and closing tags
+            begin_itemize = text.count(r'\begin{itemize}')
+            end_itemize = text.count(r'\end{itemize}')
+            begin_enumerate = text.count(r'\begin{enumerate}')
+            end_enumerate = text.count(r'\end{enumerate}')
+            
+            # Close any unclosed environments
+            if begin_itemize > end_itemize:
+                text += '\n' + r'\end{itemize}' * (begin_itemize - end_itemize)
+            if begin_enumerate > end_enumerate:
+                text += '\n' + r'\end{enumerate}' * (begin_enumerate - end_enumerate)
+                
+        return text
+    
+    env.filters['fix_newlines'] = fix_newlines
+    
     template = env.get_template(template_name)
     
     # Prepare template context

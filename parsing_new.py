@@ -4,8 +4,7 @@ import base64
 import fitz  # PyMuPDF
 from dotenv import load_dotenv
 from openai import OpenAI
-
-from inodatamodel import Exam, ExamContent, ExamMetadataOnly
+from data_model import ExamContent, ExamMetadataOnly, Exam
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -66,6 +65,7 @@ def parse_content(doc):
                     "You are an expert exam parser. Extract all problems into the structure.\n"
                     "IMPORTANT:\n"
                     "- Distinguish between 'ExamQuestion' (Text/Math) and 'MultipleChoiceExamQuestion' (Checkbox/Options).\n"
+                    "- DO NOT INCLUDE ANY IMAGES in your output Latex.\n"
                     "- For MC: Extract options and correct indices if marked.\n"
                     "- Use LaTeX for all math."
                 )
@@ -82,13 +82,19 @@ def parse_content(doc):
     )
     return completion.choices[0].message.parsed
 
-#merge beide 
-def parse_exam_complete(pdf_path):
-    if not os.path.exists(pdf_path):
-        raise FileNotFoundError("PDF nicht gefunden")
 
-    doc = fitz.open(pdf_path)
+def parse_exam_complete(uploaded_file):
+    """
+    Parse exam from Streamlit UploadedFile object.
     
+    Args:
+        uploaded_file: Streamlit UploadedFile object
+    """
+    # Read bytes from uploaded file
+    pdf_bytes = uploaded_file.read()
+    
+    # Open PDF from bytes
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     # metadata 
     meta = parse_metadata(doc)
     print(f"Metadaten erkannt: {meta.exam_title} ({meta.examiner})")
