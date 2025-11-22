@@ -3,7 +3,8 @@
 
 from QuestionModification import rewrite_exam_question
 from build_new_mp_questions import modify_mp_questions
-from data_model import Exam, MultipleChoiceExamQuestion
+from data_model import Exam, MultipleChoiceExamQuestion, SubQuestion
+from ensemble_solver import EnsembleCoordinator
 from render_mc_problem import render_mc_problem, strip_non_ascii
 from render_problem import render_problem
 from jinja2 import Environment, FileSystemLoader
@@ -145,6 +146,8 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
 
     problem_filenames = []
     total_problems = len(exam.exam_content.problems)
+    solver = EnsembleCoordinator()
+
     for idx, problem in enumerate(exam.exam_content.problems, start=1):
         if status_callback:
             progress = 0.3 + (idx / total_problems) * 0.4
@@ -159,6 +162,12 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
             problem_latex = render_mc_problem(new_problem, problem_number=idx)
         else:
             new_problem = rewrite_exam_question(problem)
+            q_description = new_problem.question_description_latex if new_problem.question_description_latex else ""
+            for sub_question in new_problem.sub_questions:
+                if isinstance(sub_question, SubQuestion):
+                    print("Solving sub-question")
+                    solution = solver.solve(q_description + "\n" + sub_question.question_text_latex)
+                    sub_question.question_answer_latex = solution['final_answer']
             problem_latex = render_problem(new_problem, problem_number=idx)
         
         if not problem_latex is None:

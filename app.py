@@ -568,21 +568,6 @@ with left_col:
             # Load and parse the exam
             exam = parse_exam_complete(uploaded_file)
                                        
-            solver = EnsembleCoordinator()
-
-            # Correct Answers
-            for question in exam.exam_content.problems:
-                if isinstance(question, ExamQuestion):
-                    q_description = question.question_description_latex if question.question_description_latex else ""
-                    for sub_question in question.sub_questions:
-                        if isinstance(sub_question, SubQuestion):
-                            print("Solving sub-question")
-                            solution = solver.solve(q_description + "\n" + sub_question.question_text_latex)
-                            sub_question.question_answer_latex = solution['final_answer']
-            
-            # Build the exam with status updates
-            
-
 
             exam_path, solution_path = build_exam(exam, status_callback=update_status)
             print(f"Exam built at: {exam_path}")

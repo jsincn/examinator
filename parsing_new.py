@@ -85,7 +85,7 @@ def parse_content(doc):
     )
     return completion.choices[0].message.parsed
 
-@st.cache_data()
+@st.cache_resource()
 def parse_exam_complete(uploaded_file):
     """
     Parse exam from Streamlit UploadedFile object.
