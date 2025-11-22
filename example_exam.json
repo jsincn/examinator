@@ -1,0 +1,26 @@
+{
+  "total_points": 12,
+  "total_time_min": 30,
+  "exercises": [
+    {
+      "total_points": 12,
+      "sub_questions": [
+        {
+          "question_text_latex": "a) Consider two convolutional kernels applied to a two-dimensional input (e.g., a grayscale image). What are the effects of each kernel?\\n\\nKernel C1: $\\frac{1}{9} \\begin{bmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{bmatrix}$\\n\\nKernel C2: $\\begin{bmatrix} 1 & -1 \\\\ 1 & -1 \\end{bmatrix}$",
+          "question_answer_latex": "",
+          "available_points": 2
+        },
+        {
+          "question_text_latex": "b) A Convolution Layer has 5 filters, filter size of 7, stride of 3, padding of 1, and operates on an input feature map of size $26 \\times 26 \\times 26$. What is the output dimensionality?",
+          "question_answer_latex": "",
+          "available_points": 2
+        },
+        {
+          "question_text_latex": "c) A convolutional layer operates on an RGB image with 4 filters, kernel size 5, stride 1, and no padding.\\n\\n1) What is the shape of its weight tensor?\\n\\n2) Name all dimensions of your weight tensor.",
+          "question_answer_latex": "",
+          "available_points": 2
+        }
+      ]
+    }
+  ]
+}
