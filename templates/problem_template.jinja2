@@ -1,5 +1,12 @@
 % Problem template generated from ExamQuestion
-\problem{Problem {{ problem_number }}}
+\problem{Problem {{ problem_number }} {{ question_title if question_title else '' }}}
+{% if question_title %}
+{{ question_title }}
+
+{% if question_description_latex %}
+{{ question_description_latex }}
+{% endif %}
+{% endif %}
 
 {% for idx, sub_question in sub_questions %}
 \subproblem{{ '*' if sub_question.starred else '' }}{{'{'}}{{ sub_question.available_points }}{{'}'}}
