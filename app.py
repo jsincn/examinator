@@ -573,7 +573,7 @@ with left_col:
                 st.session_state["uploaded_file"] = uploaded_file.name
                 st.session_state["exam_built"] = True
                 st.session_state["use_rag"] = use_rag
-            st.session_state["use_rag"] = use_rag
+            # st.session_state["use_rag"] = use_rag
 
 
 with right_col:
