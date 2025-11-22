@@ -113,6 +113,7 @@ with left_col:
             with st.spinner("Building exam PDF..."):
 
                 exam = parse_exam_complete(uploaded_file)
+                # exam = get_dummy_exam()
 
                 st.write(exam)
 
