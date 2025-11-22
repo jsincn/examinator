@@ -17,7 +17,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import ValidationError
-
+import streamlit as st
 # Import UEF data models
 from data_model import Exam, ExamQuestion, SubQuestion, ExamContent, MultipleChoiceExamQuestion
 
@@ -27,6 +27,12 @@ load_dotenv()
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+@st.cache_data()
+def solve_helper(q_description, sub_question: SubQuestion):
+    solver = EnsembleCoordinator()
+    return solver.solve(q_description + "\n" + sub_question.question_text_latex, available_points=sub_question.available_points)
+
 
 class Solver:
     """Independent Solver LLM that attempts to solve math problems."""
@@ -102,19 +108,20 @@ class Solver:
         if available_points is not None:
             points_note = f"\n\nThis question is worth {available_points} point(s) total. You MUST distribute exactly {available_points} point(s) across the key components of your answer. The sum of all point allocations must equal {available_points}."
         
-        prompt = f"""You are a math-specialist model solving an exam question. Provide a comprehensive, detailed answer in the style of exam solution keys.
+        prompt = f"""You are a math-specialist model solving an exam question. Provide a concise but complete answer in the style of exam solution keys.
 
 Your answer should:
-1. Be thorough and detailed (not just a short answer)
-2. Explain the key concepts and reasoning clearly
-3. Include all important steps and explanations
+1. Be concise and to the point (not overly verbose)
+2. Include the essential information and key concepts
+3. Be clear and direct, similar to official exam solution keys
 4. End with a point distribution using the format (Xp) for each component, where the total adds up to the available points
 
 Format your final answer as:
 
-Final Answer: <detailed answer text> (Xp for <component 1>, Yp for <component 2>, ...)
+Final Answer: <concise answer text> (Xp for <component 1>, Yp for <component 2>, ...)
 
 IMPORTANT RULES:
+- Keep answers concise - aim for 1-3 sentences for most questions, longer only if truly necessary
 - Use the format (Xp) where X is the number of points (e.g., (1p), (0.5p), (2p))
 - The sum of all point allocations MUST equal the total available points for this question
 - Break down the answer into logical components that make sense for grading
@@ -128,11 +135,13 @@ Final Answer: Xavier initialization. (1p)
 
 If the answer should be in LaTeX format, provide it in LaTeX.{latex_note}{points_note}
 
+Limit your response to 50 words max.
+
 Problem:
 {problem}"""
         
         messages = [
-            {"role": "system", "content": "You are a math-specialist model creating exam solution keys. Provide comprehensive, detailed answers in the style of official exam solutions, with clear explanations and point distributions."},
+            {"role": "system", "content": "You are a math-specialist model creating exam solution keys. Provide concise but complete answers in the style of official exam solutions, with clear explanations and point distributions. Keep answers brief and to the point."},
             {"role": "user", "content": prompt}
         ]
         
@@ -363,7 +372,7 @@ class EnsembleCoordinator:
         """
         self.solvers = [
             Solver(model="gpt-4o", name="Solver-1-GPT4o"),
-            Solver(model="gpt-4o-mini", name="Solver-2-GPT4oMini"),
+            Solver(model="gpt-4o", name="Solver-2-GPT4o"),
             Solver(model="gpt-4o", name="Solver-3-GPT4o")
         ]
         self.arbiter = Arbiter(model="gpt-4o")

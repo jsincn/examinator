@@ -1,6 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 from text_utils import strip_non_ascii
 from data_model import ExamQuestion
+import streamlit as st
 import os
 import unicodedata
 import subprocess
@@ -50,73 +51,72 @@ Corrected LaTeX:
         print(f"Error calling OpenAI API: {e}")
         return None
 
-# def latex_is_valid(latex_str: str) -> tuple[bool, str]:
-#     """Check if LaTeX code compiles successfully by creating a minimal document."""
-#     
-#     minimal_latex_doc = r"""
-# \documentclass{article}
-# \usepackage{amsmath}
-# \usepackage{graphicx}
-# \usepackage{amssymb}
-# % Add any other packages that are commonly used in your snippets
-# \begin{document}
-# """ + latex_str + r"""
-# \end{document}
-# """
-# 
-#     with tempfile.TemporaryDirectory() as tmp:
-#         tex_path = os.path.join(tmp, "test.tex")
-#         with open(tex_path, "w", encoding="utf-8") as f:
-#             f.write(minimal_latex_doc)
-#         
-#         result = subprocess.run(
-#             ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "-output-directory", tmp, tex_path],
-#             stdout=subprocess.PIPE,
-#             stderr=subprocess.PIPE
-#         )
-#         
-#         if result.returncode == 0:
-#             return True, ""
-#         else:
-#             log_path = os.path.join(tmp, "test.log")
-#             error_log = ""
-#             try:
-#                 with open(log_path, "r", encoding="utf-8") as f:
-#                     error_log = f.read()
-#             except FileNotFoundError:
-#                 error_log = result.stdout.decode('utf-8', errors='ignore') + "\n" + result.stderr.decode('utf-8', errors='ignore')
-#             print("LaTeX compilation error log:")
-#             print(error_log)
-#             return False, error_log
+def latex_is_valid(latex_str: str) -> tuple[bool, str]:
+    """Check if LaTeX code compiles successfully by creating a minimal document."""
+    
+    minimal_latex_doc = r"""
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+% Add any other packages that are commonly used in your snippets
+\begin{document}
+""" + latex_str + r"""
+\end{document}
+"""
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tex_path = os.path.join(tmp, "test.tex")
+        with open(tex_path, "w", encoding="utf-8") as f:
+            f.write(minimal_latex_doc)
+        
+        result = subprocess.run(
+            ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "-output-directory", tmp, tex_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        
+        if result.returncode == 0:
+            return True, ""
+        else:
+            log_path = os.path.join(tmp, "test.log")
+            error_log = ""
+            try:
+                with open(log_path, "r", encoding="utf-8") as f:
+                    error_log = f.read()
+            except FileNotFoundError:
+                error_log = result.stdout.decode('utf-8', errors='ignore') + "\n" + result.stderr.decode('utf-8', errors='ignore')
+            print("LaTeX compilation error log:")
+            print(error_log)
+            return False, error_log
 #     
 
 def fix_latex_filter(text):
-    # LaTeX validation is disabled - just return the text as-is
-    # Uncomment the code below if you have LaTeX installed and want validation
-    # is_valid, error = latex_is_valid(text)
-    # if is_valid:
-    #     return text
-    # else:
-    #     print("Rendered LaTeX is not valid. Attempting to fix with LLM...")
-    #     fixed_latex = fix_latex_with_llm(text, error)
-    #     
-    #     max_attempts = 3
-    #     current_latex = fixed_latex
-    #     
-    #     for attempt in range(1, max_attempts + 1):
-    #         
-    #         is_valid, error = latex_is_valid(current_latex) if current_latex else (False, "")
-    #         if current_latex and is_valid:
-    #             print(f"LLM fixed the LaTeX successfully on attempt {attempt}.")
-    #             return current_latex
-    #         elif attempt < max_attempts:
-    #             print(f"Attempt {attempt} failed. Retrying...")
-    #             current_latex = fix_latex_with_llm(current_latex if current_latex else rendered_latex, error)
-    #         else:
-    #             print(f"LLM could not fix the LaTeX after {max_attempts} attempts. The output is not valid.")
-    #             return ""
+    is_valid, error = latex_is_valid(text)
+    if is_valid:
+        return text
+    else:
+        print("Rendered LaTeX is not valid. Attempting to fix with LLM...")
+        fixed_latex = fix_latex_with_llm(text, error)
+        
+        max_attempts = 3
+        current_latex = fixed_latex
+        
+        for attempt in range(1, max_attempts + 1):
+            
+            is_valid, error = latex_is_valid(current_latex) if current_latex else (False, "")
+            if current_latex and is_valid:
+                print(f"LLM fixed the LaTeX successfully on attempt {attempt}.")
+                return current_latex
+            elif attempt < max_attempts:
+                print(f"Attempt {attempt} failed. Retrying...")
+                current_latex = fix_latex_with_llm(current_latex if current_latex else rendered_latex, error)
+            else:
+                print(f"LLM could not fix the LaTeX after {max_attempts} attempts. The output is not valid.")
+                return ""
     return text
             
+@st.cache_data()
 def render_problem(exam_question: ExamQuestion, problem_number: int, template_path: str = "templates/problem_template.jinja2") -> str | None:
     """
     Render an ExamQuestion to LaTeX using the Jinja template.
