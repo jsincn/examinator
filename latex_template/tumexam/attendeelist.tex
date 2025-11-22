@@ -1,0 +1,271 @@
+%% attendeelist.tex
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\usepackage[pagestyles,extramarks]{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{csvsimple}
+\usepackage{multicol}
+\usepackage{marginfit}
+\usepackage{everypage}
+\usepackage{fontawesome}
+\usepackage{adjustbox}
+
+\usepackage{tumexam/examconf}
+\usepackage{tumexam/jobname}
+\usepackage{tumexam/sticker}
+\usepackage{tumexam/unicode}
+
+\usepackage{tumfonts}
+\usepackage{tumcolor}
+
+\usetikzlibrary{patterns}
+
+
+\newmarkset{seat}
+\newextramark{seat}{\seattitle}
+\def\seattitle{}
+
+\newcommand{\pid}{\examcode-A\roomcode-\twodigit{\thepage}}
+
+\newcounter{hotspare}
+\setcounter{hotspare}{9000}
+\renewcommand{\thehotspare}{S\arabic{hotspare}}
+
+\newpagestyle{attendeelist}{%
+	\sethead{%
+	}{%
+		\begin{tikzpicture}
+			\useasboundingbox (-1.5\sstickerwidth,0) rectangle (1.5\sstickerwidth,\sstickerheight);
+			\node[
+				above,
+				font=\large,
+			] at (0,\sstickerheight) {\thetitle};
+			\node[
+				below right,
+			] at (-2.5\sstickerwidth,\sstickerheight) {\thetype};
+			\node[
+				below left,
+			] at (-0.5\sstickerwidth,\sstickerheight) {\pagename~\thepage\ / \pageref{\attendeelist}};
+			\node[
+				below,
+				font=\bfseries,
+			] at (0,\sstickerheight) {\room};
+			\node[
+				below right,
+			] at (0.5\sstickerwidth,\sstickerheight) {\firstextramarks{seat}\seattitle\ --\ \botextramarks{seat}\seattitle};
+			\node[
+				below left,
+				font=\scriptsize\ttfamily,
+			] at (2.5\sstickerwidth,\sstickerheight) {\pid};
+			\node [
+				right,
+			] at (-2.5\sstickerwidth,0.5\sstickerheight) {\datamatrix[.4mm]{\pid}};
+			\node [
+				inner sep=0pt,
+				text width=1.45\textwidth,
+				font=\tiny,
+				align=center,
+			] at (0,0.5\sstickerheight) {\stickerinstructiontext};
+			\node [
+				left,
+			] at (2.5\sstickerwidth,0.5\sstickerheight) {\datamatrix[0.4mm]{\pid}};
+			\node[
+				rectangle,
+				minimum width=\textwidth,
+				minimum height=1em,
+				pattern=north east lines,
+				pattern color=TUMRed,
+			] at (0, 0.5em) {};
+			\node[
+				rectangle,
+				minimum width=2pt,
+				minimum height=1em,
+				inner sep=0pt,
+				fill,
+			] at (0, 0.5em) {};
+			\node[
+				fill=white,
+				text=TUMRed,
+				inner sep=2pt,
+			] at (-0.75\sstickerwidth, 0.5em) {\donotremovetext};
+			\node[
+				fill=white,
+				text=TUMRed,
+				inner sep=2pt,
+			] at (0.75\sstickerwidth, 0.5em) {\donotremovetext};
+			\node[
+				text=TUMDarkGreen,
+				inner sep=2pt,
+			] at (-2\sstickerwidth, 0.5em) {\faArrowDown\ \placeonexamtext\ \faArrowDown};
+			\node[
+				text=TUMDarkGreen,
+				inner sep=2pt,
+			] at (2\sstickerwidth, 0.5em) {\faArrowDown\ \placeonexamtext\ \faArrowDown};
+		\end{tikzpicture}
+	}{%
+	}
+
+	\setfoot{%
+	}{%
+		\begingroup%
+			\hotsparetrue%
+			\hspace*{-\sstickerwidth}%
+			\stepcounter{hotspare}\edef\srid{\thehotspare}%
+			\sticker{\examcode}{\srid}{\matrikel}{\seatname}{\seattitle}\attendee%
+			\rule{2pt}{\sstickerheight}%
+			\stepcounter{hotspare}\edef\srid{\thehotspare}%
+			\attendee\sticker{\examcode}{\srid}{\matrikel}{\seatname}{\seattitle}%
+			\hspace*{-\sstickerwidth}%
+		\endgroup%
+	}{%
+	}
+}
+
+\geometry{%
+	paper=a4paper,
+	top=31.92mm,
+	left=47.85mm,
+	right=47.85mm,
+	bottom=31.92mm,
+	marginparsep=0mm,
+	marginparwidth=\sstickerwidth,
+	headheight=\sstickerheight,
+	headsep=0mm,
+	footskip=\sstickerheight,
+	twoside=true,
+	columnsep=2pt,
+	twocolumn,
+}%
+\pagestyle{attendeelist}
+
+\newcounter{abspage}
+\newwrite\attendeelistpages
+\immediate\openout\attendeelistpages=\jobname-pages.csv
+\immediate\write\attendeelistpages{code;pagenum;pdf_pagenum}
+\AddEverypageHook{%
+	\stepcounter{abspage}%
+	\write\attendeelistpages{\roomcode;\arabic{page};\arabic{abspage}}%
+}
+
+\newwrite\srids
+\immediate\openout\srids=\jobname-srids.csv
+\immediate\write\srids{srid;code;pagenum}
+
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\setlength{\columnseprule}{2pt}
+\setlength{\marginparpush}{-1pt}
+
+
+\newcommand{\attendee}{%
+	\begin{tikzpicture}
+		\useasboundingbox ($(-0.5\sstickerwidth+1pt, 0)$) rectangle (\sstickerwidth, \sstickerheight);
+		\common{\srid}{\matrikel}{\seatname}{\seattitle}
+		\coordinate (name) at (0.05\sstickerwidth, 0.55\sstickerheight);
+		\ifhotspare
+			\draw (name) -- ++(0.9\sstickerwidth, 0);
+			\node[
+				below right,
+				inner sep=1pt,
+				font=\fontsize{3}{4}\selectfont,
+			] at (name) {\lastnamename, \firstnamename};
+		\else
+			\node[
+				above right,
+				inner sep=0pt,
+				font=\bfseries,
+			] at (name) {\maxsizebox{0.9\sstickerwidth}{1em}{\lastname, \firstname}};
+		\fi
+		\coordinate (signature) at (0.05\sstickerwidth, 0.15\sstickerheight);
+		\draw (signature) -- ++(0.9\sstickerwidth, 0);
+		\node[
+			below right,
+			inner sep=1pt,
+			font=\fontsize{3}{4}\selectfont,
+		] at (signature) {\signaturename};
+		\ifhotspare
+			\edef\studentimagefile{\imagefolder/unknown.png}
+		\else
+			\edef\studentimagefile{\imagefolder/\studentimage}
+		\fi
+		\node at (-0.25\sstickerwidth, 0.5\sstickerheight) {%
+			\includegraphics[%
+				height=0.9\sstickerheight,
+				width=0.4\sstickerwidth,
+				keepaspectratio,
+			]{\studentimagefile}%
+		};
+	\end{tikzpicture}%
+	\edef\esrid{\srid}%
+	\expandafter\write\expandafter\srids\expandafter{\esrid;\roomcode;\arabic{page}}%
+}
+
+
+\begin{document}
+
+\newcounter{sticker}
+\edef\roomlist{}
+\csvreader[head,separator=semicolon]{\listsfolder/rooms.csv}{code=\roomcode,shortname=\room,attendeelist=\attendeelist,hotspares=\hotspares}{%
+	\edef\roomlist{\roomlist,\roomcode/\room/\attendeelist/\hotspares}%
+}
+
+\foreach \roomcode/\room/\attendeelist/\hotspares in \roomlist {%
+	\ifx\attendeelist\empty\else%
+	\setcounter{sticker}{0}%
+	\csvreader[head,separator=semicolon]{\listsfolder/\attendeelist}{matrikel=\matrikel,srid=\srid,pic=\studentimage,lastname=\lastname,firstname=\firstname,rowlabel=\row,seatlabel=\seat,room=\roomx}{%
+		\stepcounter{sticker}%
+		\def\seattitle{\row~\seat}%
+		\attendee%
+		\extramark{seat}%
+		\marginpar{\sticker{\examcode}{\srid}{\matrikel}{\seatname}{\seattitle}}%
+		\vskip-1.05pt%
+	}%
+	\ifnum\hotspares>0%
+		\foreach \i in {1,...,\hotspares}{%
+			\stepcounter{sticker}%
+			\hotsparetrue%
+			\stepcounter{hotspare}\edef\srid{\thehotspare}%
+			\attendee%
+			\marginpar{\sticker{\examcode}{\srid}{\matrikel}{\seatname}{\seattitle}}%
+			\vskip-1.05pt%
+		}%
+	\fi%
+	\loop\ifnum\value{sticker}>21%
+		\addtocounter{sticker}{-22}%
+	\repeat%
+	\ifnum\value{sticker}>0%
+		\foreach \i in {\arabic{sticker},...,21}{%
+			\hotsparetrue%
+			\stepcounter{hotspare}\edef\srid{\thehotspare}%
+			\attendee%
+			\marginpar{\sticker{\examcode}{\srid}{\matrikel}{\seatname}{\seattitle}}%
+			\vskip-1.05pt%
+		}%
+	\fi%
+	\label{\attendeelist}%
+	\clearpage%
+	\setcounter{page}{1}%
+	\fi%
+}%
+
+\end{document}

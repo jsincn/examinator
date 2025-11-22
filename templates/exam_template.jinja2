@@ -1,0 +1,91 @@
+%% exam.tex
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper,twoside,10pt]{tumexam}
+
+\input{conf/packages}
+
+
+\begin{document}
+
+\ifminimaltitlepage%
+	% Instead of the default titlepage, you may use a minimal titlepage, e.g.
+	% for single-page quizzes.
+	\maketitle
+\else%
+	% Default titlepage with automatically generated information about length
+	% of the exam, number of problems, credit count, and information from
+	% conf/examnotes.tex and conf/toolsallowed.tex
+	\begin{titlepage}
+		\subsection*{\examnotesname}
+		\examnotes
+	\end{titlepage}
+\fi%
+
+\IfFileExists{externalpdf/template.pdf}{\externalpdf{externalpdf}}{
+
+\ifexternalproblems%
+
+% If EXTERNALPROBLEMS is set to true in conf/examconf.tex, problems start here
+\begin{Form}
+\begin{landscape}
+\twocolumn
+
+\problem{}
+\begin{solutionbox}[2cm]{1}
+\end{solutionbox}
+\begin{gridinstructionbox}[2cm]{1}
+\end{gridinstructionbox}
+\newpage
+
+\onecolumn
+\end{landscape}
+\end{Form}
+
+\else%
+
+% If you want a TOC of problems
+\iftoc
+	\tableofcontents
+	\clearpage
+\fi
+
+% PROBLEMS START HERE in all other cases
+\begin{Form}
+
+{% for problem_file in problem_files %}
+\input{problems/{{ problem_file }}}
+{% if not loop.last %}
+\newpage
+{% endif %}
+{% endfor %}
+
+\end{Form}
+
+% Do NOT remove these lines
+% Fill space to a multiple of 2 or 4 pages (depending on staple settings).
+% If you do not want grids on additional pages, use \makesapcealign* instead.
+\textbf{\extraspacenote}
+\label{additionalspace}
+\makespacealign
+
+\fi%
+}
+
+\backcover
+\end{document}

@@ -1,0 +1,114 @@
+%% tumcontact.sty
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tumcontact}[2016/03/18 TUM contact information]
+
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage{pbox}
+\RequirePackage{tumlogo}
+\RequirePackage{tumlang}
+
+\localemacro{\orgname}{Technical University of Munich}{Technische Universität München}%
+\def\orglogo#1{\TUMLogo[TUMBlack]{#1}}%
+
+\IfFileExists{conf/organization.tex}{%
+	\input{conf/organization}%
+}{%
+}
+
+\AtBeginDocument{%
+	\hypersetup{
+		pdftitle={\thetitle\ / \thetype},
+		pdfauthor={\thechair\ -- \thedepartment\ -- \orgname}
+	}
+}
+
+
+\newif\iftumcontact@displaytext
+\newlength{\tumcontact@unitsize}
+\newlength{\tumcontact@fontsize}
+\newcommand{\tumcontact@header}[2][TUMBlue]%
+{%
+	\begingroup%
+	\setlength{\tumcontact@unitsize}{#2}%
+	\setlength{\tumcontact@fontsize}{\tumcontact@unitsize}%
+	\divide\tumcontact@fontsize 196608%
+	\multiply\tumcontact@fontsize 65536%
+	\fontsize{\tumcontact@fontsize}{\tumcontact@fontsize}\selectfont%
+	\normalfont\sffamily%
+	\color{#1}%
+	\noindent%
+	\iftumcontact@displaytext%
+		\pbox[b][\tumcontact@unitsize][s]{\textwidth}{%
+			\strut\ifdefined\thechair\thechair\fi%
+			\vspace{\fill}\\%
+			\strut\ifdefined\thedepartment\thedepartment\fi%
+			\vspace{\fill}\\%
+			\strut\orgname%
+		}%
+	\fi%
+	\hspace*{\fill}%
+	\orglogo{\tumcontact@unitsize}
+	\endgroup%
+}%
+\def\TUMheader{%
+	\@ifstar%
+	{\tumcontact@displaytextfalse\tumcontact@header}%
+	{\tumcontact@displaytexttrue\tumcontact@header}%
+}%
+
+%\TUMFooter[Additional text]
+\newif\iftumcontact@displaypage
+\newcommand{\tumcontact@footer@typeset}{%
+	\begingroup%
+	\normalfont\sffamily%
+	\noindent%
+	\pbox[b]{\textwidth}{%
+		\pbox[t]{\textwidth}{%
+			\textbf{\orgname}\\%
+			\ifdefined\thedepartment\thedepartment\fi\\%
+			\ifdefined\thechair\thechair\fi%
+		}%
+		\tumcontact@footer@addtext%
+		\\%
+	}%
+	\hspace{0pt plus 1fill minus 1fill}%
+	\iftumcontact@displaypage%
+		\textbf{\thepage}%
+	\fi%
+	\endgroup%
+}%
+\def\tumcontact@footer@add[#1]{%
+	\g@addto@macro\tumcontact@footer@addtext{%
+		\hspace{2em}%
+		\pbox[t]{\textwidth}{#1}%
+	}%
+	\@ifnextchar[{\tumcontact@footer@add}{\tumcontact@footer@typeset}%
+}%
+\def\tumcontact@footer{%
+	\def\tumcontact@footer@addtext{}%
+	\@ifnextchar[{\tumcontact@footer@add}{\tumcontact@footer@typeset}%
+}%
+\def\TUMfooter{%
+	\@ifstar%
+	{\tumcontact@displaypagetrue\tumcontact@footer}%
+	{\tumcontact@displaypagefalse\tumcontact@footer}%
+}%
+
+\endinput

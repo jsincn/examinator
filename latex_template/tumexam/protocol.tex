@@ -1,0 +1,207 @@
+%% protocol.tex
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\usepackage[pagestyles,extramarks]{titlesec}
+\usepackage{csvsimple}
+\usepackage{datamatrix}
+\usepackage{everypage}
+
+\usepackage{tumexam/examconf}
+
+\usepackage{tumfonts}
+\usepackage{tumcontact}
+
+
+\newcommand{\pid}{\examcode-P\roomcode-\twodigit{\thepage}}
+
+\newpagestyle{protocol}{%
+	\sethead{%
+	}{%
+		\TUMheader[black]{10mm}\hspace{10mm}\datamatrix[.4167mm]{\pid}%
+	}{%
+	}
+
+	\setfoot{%
+		\mbox{\datamatrix*[.4167mm]{\pid}}
+	}{%
+		\normalfont -- \pagename~\thepage\ / \pageref{\room} --%
+	}{%
+		\mbox{\texttt{\scriptsize\pid}\hspace{5mm}\datamatrix*[.4167mm]{\pid}}%
+	}
+}
+
+\geometry{%
+	paper=a4paper,
+	top=30mm,
+	left=10mm,
+	right=10mm,
+	bottom=26.667mm,
+	marginparsep=0pt,
+	headheight=10mm,
+	headsep=10mm,
+	footskip=16.667mm,
+	twoside=false,
+	columnsep=0pt,
+}%
+\pagestyle{protocol}
+
+\newcounter{abspage}
+\newwrite\protocolpages
+\immediate\openout\protocolpages=\jobname-pages.csv
+\immediate\write\protocolpages{code;pagenum;pdf_pagenum}
+\AddEverypageHook{%
+	\stepcounter{abspage}%
+	\write\protocolpages{\roomcode;\arabic{page};\arabic{abspage}}%
+}
+
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\let\origitemize\itemize
+\def\itemize{\origitemize\itemsep0pt}
+
+
+\newcount\rowcount
+
+
+\begin{document}
+
+\csvreader[head,separator=semicolon]{\listsfolder/rooms.csv}{code=\roomcode,shortname=\room,responsible=\responsible}{%
+	\begin{center}
+		\Large\bfseries%
+		\thedepartment\\
+		\theexaminer
+		\vskip\baselineskip
+		\localetext{Examination protocol for}{Protokoll zur Klausur}
+		\emph{\thetitle{} (\themodule)}
+	\end{center}
+	\vskip\baselineskip
+	\def\arraystretch{1.5}
+	\begin{tabular}{|p{.30\textwidth}|p{.65\textwidth}|}
+		\hline
+		\textbf{\lecturename} & \thetitle\\
+		\hline
+		\textbf{\modulename} & \themodule\\
+		\hline
+		\textbf{\examname} & \thetype\\
+		\hline
+		\textbf{\datename} & \theexamdate\\
+		\hline
+		\textbf{\timename} & \thestarttime~--~\thestoptime \\
+		\hline
+		\textbf{\roomname} & \room\\
+		\hline
+		\textbf{\responsibilityname} & \responsible\\
+		\hline
+		\textbf{\supervisorsname} & \\
+		& \\
+		& \\
+		& \\
+		& \\
+		& \\
+		\hline
+		\textbf{\localetext{Allowed tools}{Zugelassene Hilfsmittel}} &
+		\input{conf/toolsallowed}\\
+		\hline
+		\textbf{\localetext{Anouncement of tools}{Bekanntgabe der Hilfsmittel}} &
+		\input{conf/toolsannouncement}\\
+		\hline
+		\textbf{\localetext{Participating candidates}{Erschienene Pr\"uflinge}} & \\
+		& \\
+		\hline
+		\textbf{\localetext{Start time of exam}{Beginn der Pr\"ufung}} & \\
+		& \\
+		\hline
+		\textbf{\localetext{Start of work time}{Beginn der Nettoarbeitszeit}} & \\
+		& \\
+		\hline
+		\textbf{\localetext{End of work time}{Ende der Nettoarbeitszeit}} & \\
+		& \\
+		\hline
+		\textbf{\localetext{End time of exam}{Ende der Pr\"ufung}} & \\
+		& \\
+		\hline
+	\end{tabular}
+	\clearpage
+	\def\emptyrows{}
+	\rowcount 0
+	\loop\ifnum\rowcount<30
+		\expandafter\def\expandafter\emptyrows\expandafter{\emptyrows & & \\\hline}
+		\advance\rowcount 1
+	\repeat
+	\begin{center}
+		\bfseries \localetext{Absence from examination room}{Verlassen des Pr\"ufungsraums}
+	\end{center}
+	\def\arraystretch{1.75}
+	\begin{tabular}{|p{.6\textwidth}|p{.165\textwidth}|p{.165\textwidth}|}
+		\hline
+		\textbf{\localetext{Candidate}{Pr\"ufling} / \registrationname} &
+		\textbf{\localetext{Start}{Beginn}} &
+		\textbf{\localetext{End}{Ende}} \\
+		\hline
+		\emptyrows
+	\end{tabular}
+	\clearpage
+	\def\emptyrows{}
+	\rowcount 0
+	\loop\ifnum\rowcount<14
+		\expandafter\def\expandafter\emptyrows\expandafter{\emptyrows & \\\hline}
+		\advance\rowcount 1
+	\repeat
+	\begin{center}
+		\bfseries \localetext{Early submission or withdrawal}{Vorzeitige Abgabe oder Aufgabe}
+	\end{center}
+	\def\arraystretch{1.75}
+	\begin{tabular}{|p{.785\textwidth}|p{.165\textwidth}|}
+		\hline
+		\textbf{\localetext{Candidate}{Pr\"ufling} / \registrationname} &
+		\textbf{\localetext{Time}{Uhrzeit}} \\
+		\hline
+		\emptyrows
+	\end{tabular}
+	\begin{center}
+	\bfseries \localetext{Exam withdrawal due to sudden illness}{Pr\"ufungsabbruch wegen Krankheit}
+	\end{center}
+	\def\arraystretch{1.75}
+	\begin{tabular}{|p{.785\textwidth}|p{.165\textwidth}|}
+		\hline
+		\textbf{\localetext{Candidate}{Pr\"ufling} / \registrationname} &
+		\textbf{\localetext{Time}{Uhrzeit}} \\
+		\hline
+		\emptyrows
+	\end{tabular}
+	\clearpage
+	\begin{center}
+		\bfseries \localetext{Notes}{Notizen}
+	\end{center}
+	\rowcount 0
+	\loop\ifnum\rowcount<27
+		\vskip2\baselineskip
+		\hrule
+		\advance\rowcount 1
+	\repeat
+	\label{\room}
+	\clearpage
+	\setcounter{page}{1}
+}
+
+\end{document}
+

@@ -1,0 +1,11 @@
+
+IMPORTANT
+=========
+
+Do *not* place binaries such as JPG, PNG, or PDF file here. Put them into the
+pics directory instead.
+
+Binaries placed here may be overwritten if the external TiKZ figures are
+compiled, which would cause merge conflicts. This, binaries in this folder are
+ignored by the TUMexam frontend during ZIP upload.
+

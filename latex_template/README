@@ -1,0 +1,64 @@
+
+TUMexam
+=======
+
+LaTeX template for exams. The most important things are documented below:
+
+
+Dependencies
+------------
+
+In order to compile the template you need the following packages:
+	texlive-full 2017-2020
+	make
+
+Tested under Linux (Debian) and macOS only.
+
+
+Customization
+-------------
+
+Customizations such as department, chair, examiner, module number etc. are
+made on the web interface of your instance and stored in 
+conf/generated/examconf.tex. You should never change this file by hand.
+
+
+Usage
+-----
+
+All problems should go into problems/, TikZ figures as standalone documents
+named as $figure.tikz into figures/. For images such as JPEGs or PDFs create a
+new subfolder pics/.
+
+Do *not* create a subfolder named 'images'. This name is reserved for a symlink
+created on TUMexam backends pointing to student images used for attendee lists.
+
+All documents are compiled using 'make'. Enter 'make help' for a list of
+targets.
+
+Note that any PDF files not placed in the pics/ subfolder are ignored as it
+could otherwise interfere with server-side builds.
+
+
+Documentation
+-------------
+
+Build the template using `make`, a solution using `make solution`, and a
+solution with correction notes using `make correction`. Read the resulting PDFs
+and the corresponding LaTeX sources carefully. This should answer almost any
+question.
+
+If the build does not succeed, please make sure that you have an up to date
+version of texlive-full installed and did not use any outdated version of
+examconf.tex.
+
+Windows users may consider using the WSL (Windows Subsystem for Linux), which
+allows to install e.g. a Debian-based Linux container within Windows.
+
+
+Known bugs:
+-----------
+
+- Compilation of seatplans and attendee lists obviously fails if not properly
+  prepared.
+

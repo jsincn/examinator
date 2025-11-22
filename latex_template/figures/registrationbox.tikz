@@ -1,0 +1,12 @@
+\documentclass[class=tumexam,tikz]{standalone}
+
+\let\myshipout\shipout
+\begin{document}%
+\let\shipout\myshipout
+
+\registrationnumberbox
+%\begin{tikzpicture}%
+%\end{tikzpicture}%
+\end{document}%
+
+% /* vim: set ts=4 syntax=tex: /*
