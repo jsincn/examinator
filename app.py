@@ -1,5 +1,8 @@
 import streamlit as st
 import time
+import json
+import tempfile
+import os
 from data_model import (
     Exam,
     ExamContent,
@@ -10,11 +13,21 @@ from data_model import (
 )
 from build_exam import build_exam
 from dotenv import load_dotenv
+from build_new_mp_questions import generate_exam_question_with_openai
+from ragpipeline import ingest_script_for_rag
 
 from ensemble_solver import EnsembleCoordinator
 from parsing_new import parse_exam_complete
 
 load_dotenv()
+
+# Initialize session state
+if "run_workflow" not in st.session_state:
+    st.session_state["run_workflow"] = False
+if "exam_built" not in st.session_state:
+    st.session_state["exam_built"] = False
+if "use_rag" not in st.session_state:
+    st.session_state["use_rag"] = False
 
 # Configure page
 st.set_page_config(
@@ -409,105 +422,158 @@ left_col, right_col = st.columns([1, 1])
 
 # Left column - file upload
 with left_col:
-    st.markdown("#### Upload File")
-    uploaded_file = st.file_uploader("Choose a file", type=["pdf"], help="Upload your exam PDF file", label_visibility="collapsed")
+    st.markdown("#### Upload Files")
+    
+    # Exam file upload
+    st.markdown("**Altklausur (Exam)**")
+    uploaded_file = st.file_uploader("Choose exam file", type=["pdf"], help="Upload your exam PDF file", label_visibility="collapsed", key="exam_upload")
+    
+    # Script file upload for RAG
+    st.markdown("**Vorlesungsskript**")
+    script_file = st.file_uploader("Choose script file", type=["pdf"], help="Upload lecture script PDF for question context", label_visibility="collapsed", key="script_upload")
 
     if uploaded_file is not None:
         st.markdown(f"<div style='font-size: 0.8125rem; color: #0065BD; margin-top: 0.5rem;'>{uploaded_file.name}</div>", unsafe_allow_html=True)
+        
+        if script_file is not None:
+            st.markdown(f"<div style='font-size: 0.8125rem; color: #0065BD; margin-top: 0.25rem;'>{script_file.name}</div>", unsafe_allow_html=True)
+        
+        # Run workflow button
+        st.markdown("""
+        <style>
+        .stButton > button {
+            background-color: #0065BD !important;
+            color: white !important;
+            border: none !important;
+            width: 100%;
+        }
+        .stButton > button:hover {
+            background-color: #00509a !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        if st.button("🚀 Run Workflow", use_container_width=True):
+            st.session_state["run_workflow"] = True
 
-        # Build the exam with dummy data only if not already built
-        if st.session_state.get("uploaded_file") != uploaded_file.name:
-            # Define steps with SVG icons
-            steps = [
-                {"icon": "⚙", "name": "Setting up workspace"},
-                {"icon": "⚙", "name": "Configuring exam metadata"},
-                {"icon": "📄", "name": "Creating problem files"},
-                {"icon": "🎨", "name": "Rendering problems"},
-                {"icon": "📝", "name": "Generating exam template"},
-                {"icon": "✓", "name": "Complete!"},
-            ]
-            
-            # Icon mapping for SVG (simple, clean icons)
-            icon_svgs = {
-                "⚙": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/></svg>',
-                "📄": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-                "🎨": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
-                "📝": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-                "✓": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>',
-                "⟳": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
-            }
-            
-            # Use a mutable container to store state
-            state = {"current_step": 0, "last_progress": 0}
-            
-            # Create placeholders in left column below upload
-            st.markdown("---")
-            st.markdown("#### Status")
-            status_placeholder = st.empty()
-            progress_placeholder = st.empty()
-            step_placeholder = st.empty()
-            
-            def update_status(message, progress):
-                # Update progress bar using Streamlit's native progress bar
-                progress_percent = progress
-                progress_placeholder.progress(progress_percent)
+        # Only proceed if button was clicked
+        if st.session_state.get("run_workflow"):
+            # Build the exam with dummy data only if not already built
+            if st.session_state.get("uploaded_file") != uploaded_file.name:
+                # Define steps with SVG icons
+                steps = [
+                    {"icon": "⚙", "name": "Setting up workspace"},
+                    {"icon": "📄", "name": "Parsing exam questions"},
+                    {"icon": "📚", "name": "Ingesting lecture script (RAG)"},
+                    {"icon": "🎨", "name": "Rendering problems"},
+                    {"icon": "📝", "name": "Generating exam template"},
+                    {"icon": "✓", "name": "Complete!"},
+                ]
                 
-                # Determine current step based on progress
-                if progress < 0.2:
-                    state["current_step"] = 0
-                elif progress < 0.3:
-                    state["current_step"] = 1
-                elif progress < 0.4:
-                    state["current_step"] = 2
-                elif progress < 0.8:
-                    state["current_step"] = 3
-                elif progress < 1.0:
-                    state["current_step"] = 4
-                else:
-                    state["current_step"] = 5
+                # Icon mapping for SVG (simple, clean icons)
+                icon_svgs = {
+                    "⚙": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/></svg>',
+                    "📄": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+                    "📚": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+                    "🎨": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
+                    "📝": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+                    "✓": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>',
+                    "⟳": '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+                }
                 
-                current_step = state["current_step"]
-                current_step_data = message
+                # Use a mutable container to store state
+                state = {"current_step": 0, "last_progress": 0}
                 
-                # Show only the current step
-                if current_step < len(steps) - 1:
-                    step_class = "step-active"
-                    icon_svg = icon_svgs.get("⟳", "⟳")
-                    icon_class = "spinning"
-                else:
-                    step_class = "step-completed"
-                    icon_svg = icon_svgs.get("✓", "✓")
-                    icon_class = ""
+                # Create placeholders in left column below upload
+                st.markdown("---")
+                st.markdown("#### Status")
+                status_placeholder = st.empty()
+                progress_placeholder = st.empty()
+                step_placeholder = st.empty()
                 
-                step_html = f'<div class="step-container {step_class}"><span class="step-number">{current_step + 1}</span><span class="status-icon {icon_class}">{icon_svg}</span><span class="step-name">{current_step_data}</span></div>'
-                step_placeholder.markdown(step_html, unsafe_allow_html=True)
-                
-                # Small delay for animation effect
-                time.sleep(0.15)
+                def update_status(message, progress):
+                    # Update progress bar using Streamlit's native progress bar
+                    progress_percent = progress
+                    progress_placeholder.progress(progress_percent)
+                    
+                    # Determine current step based on progress
+                    if progress < 0.15:
+                        state["current_step"] = 0
+                    elif progress < 0.25:
+                        state["current_step"] = 1
+                    elif progress < 0.35:
+                        state["current_step"] = 2
+                    elif progress < 0.7:
+                        state["current_step"] = 3
+                    elif progress < 0.9:
+                        state["current_step"] = 4
+                    else:
+                        state["current_step"] = 5
+                    
+                    current_step = state["current_step"]
+                    current_step_data = message
+                    
+                    # Show only the current step
+                    if current_step < len(steps) - 1:
+                        step_class = "step-active"
+                        icon_svg = icon_svgs.get("⟳", "⟳")
+                        icon_class = "spinning"
+                    else:
+                        step_class = "step-completed"
+                        icon_svg = icon_svgs.get("✓", "✓")
+                        icon_class = ""
+                    
+                    step_html = f'<div class="step-container {step_class}"><span class="step-number">{current_step + 1}</span><span class="status-icon {icon_class}">{icon_svg}</span><span class="step-name">{current_step_data}</span></div>'
+                    step_placeholder.markdown(step_html, unsafe_allow_html=True)
+                    
+                    # Small delay for animation effect
+                    time.sleep(0.15)
 
-            # Load and parse the exam
-            exam = parse_exam_complete(uploaded_file)
-                                       
+                # Load and parse the exam
+                exam = parse_exam_complete(uploaded_file)
+                
+                # Ingest lecture script for RAG if provided
+                use_rag = False
+                if script_file is not None:
+                    try:
+                        update_status("Ingesting lecture script (RAG)", 0.30)
+                        
+                        # Save script to temporary file
+                        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
+                            tmp_file.write(script_file.read())
+                            tmp_path = tmp_file.name
+                        
+                        # Ingest the script
+                        ingest_script_for_rag(tmp_path)
+                        use_rag = True
+                        st.success(f"✅ Lecture script ingested for RAG context!")
+                        os.unlink(tmp_path)
+                    except Exception as e:
+                        st.warning(f"⚠️ Could not ingest script: {e}")
+                        use_rag = False
+                
 
-            exam_path, solution_path = build_exam(exam, status_callback=update_status)
-            print(f"Exam built at: {exam_path}")
-            print(f"Solution built at: {solution_path}")
+                exam_path, solution_path = build_exam(exam, status_callback=update_status)
+                print(f"Exam built at: {exam_path}")
+                print(f"Solution built at: {solution_path}")
 
-            st.session_state['exam_path'] = exam_path
-            st.session_state['solution_path'] = solution_path
-            
-            # Final update: show completed step
-            progress_placeholder.progress(1.0)
-            
-            # Show final step as completed
-            final_step = steps[-1]
-            check_icon = icon_svgs.get("✓", "✓")
-            final_step_html = f'<div class="step-container step-completed"><span class="step-number">{len(steps)}</span><span class="status-icon">{check_icon}</span><span class="step-name">{final_step["name"]}</span></div>'
-            step_placeholder.markdown(final_step_html, unsafe_allow_html=True)
-            
-            
-            st.session_state["uploaded_file"] = uploaded_file.name
-            st.session_state["exam_built"] = True
+                st.session_state['exam_path'] = exam_path
+                st.session_state['solution_path'] = solution_path
+                st.session_state['parsed_exam'] = exam
+                
+                # Final update: show completed step
+                progress_placeholder.progress(1.0)
+                
+                # Show final step as completed
+                final_step = steps[-1]
+                check_icon = icon_svgs.get("✓", "✓")
+                final_step_html = f'<div class="step-container step-completed"><span class="step-number">{len(steps)}</span><span class="status-icon">{check_icon}</span><span class="step-name">{final_step["name"]}</span></div>'
+                step_placeholder.markdown(final_step_html, unsafe_allow_html=True)
+                
+                
+                st.session_state["uploaded_file"] = uploaded_file.name
+                st.session_state["exam_built"] = True
+                st.session_state["use_rag"] = use_rag
+            st.session_state["use_rag"] = use_rag
 
 
 with right_col:
@@ -536,6 +602,55 @@ with right_col:
             file_name="solution.pdf",
             mime="application/pdf"
         )
+        
+        # RAG-based question generation section
+        if st.session_state.get("use_rag") and 'parsed_exam' in st.session_state:
+            st.markdown("---")
+            st.markdown("#### Generate Question Variations with RAG")
+            
+            with st.expander("🔄 Generate new questions using lecture context"):
+                st.info("This will generate variations of the exam questions using context from the uploaded lecture script.")
+                
+                # Get exam from session state
+                exam = st.session_state['parsed_exam']
+                
+                # Get list of questions from the parsed exam
+                questions = exam.questions if hasattr(exam, 'questions') else []
+                
+                if questions:
+                    question_options = [f"Question {i+1}: {q.title if hasattr(q, 'title') else 'Untitled'}" for i, q in enumerate(questions)]
+                    selected_question_idx = st.selectbox("Select a question to generate variations", 
+                                                         range(len(questions)),
+                                                         format_func=lambda x: question_options[x])
+                    
+                    variation_level = st.slider("Variation level (0=minor changes, 10=completely new)", 0, 10, 5)
+                    
+                    if st.button("✨ Generate Variation with RAG Context"):
+                        try:
+                            # Get selected question
+                            selected_q = questions[selected_question_idx]
+                            
+                            # Only works with MultipleChoiceExamQuestion
+                            if isinstance(selected_q, MultipleChoiceExamQuestion):
+                                # Generate variation with RAG
+                                with st.spinner("Generating variation with RAG context..."):
+                                    variation = generate_exam_question_with_openai(
+                                        selected_q,
+                                        variation_instruction=f"Generate a variation of this question. Use context from the lecture script.",
+                                        variation=variation_level,
+                                        use_script_context=True
+                                    )
+                                
+                                st.success("✅ Variation generated successfully!")
+                                
+                                # Display the variation
+                                st.json(variation.model_dump())
+                            else:
+                                st.warning("This question type is not yet supported for RAG variations")
+                        except Exception as e:
+                            st.error(f"❌ Error generating variation: {e}")
+                else:
+                    st.warning("No questions found in exam")
 
 # # Right column - Exam Details (will be populated when exam is built)
 # with right_col:
