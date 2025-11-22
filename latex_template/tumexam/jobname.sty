@@ -1,0 +1,42 @@
+%% jobname.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/jobname}
+\RequirePackage{xstring}
+
+% \jobname is a TeX primitive expanding to a string with catcode 12 characters
+% instead of catcode 11, which prevents comparision and splitting. We therefore
+% convert the \jobname to a normal string. The jobname must no contain special
+% characters. See https://tex.stackexchange.com/questions/117892/can-i-convert-a-string-to-catcode-11
+\begingroup
+	\everyeof{\noexpand}
+	\endlinechar=-1
+	\xdef\tumexam@jobname@normal{\scantokens\expandafter{\jobname}}
+\endgroup
+
+\StrCut{\tumexam@jobname@normal}{_}{\tumexam@jobname}{\tumexam@jobname@extra}
+
+\newcommand{\checkjobname}[1]{%
+	\edef\tumexam@jobname@test{#1}%
+	\expandafter\newif\csname if#1\endcsname%
+	\ifx\tumexam@jobname\tumexam@jobname@test%
+		\csname#1true\endcsname%
+	\else%
+		\csname#1false\endcsname%
+	\fi%
+}

@@ -1,0 +1,300 @@
+%% binder.tex
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\documentclass[a4paper]{article}
+
+\usepackage{geometry}
+\usepackage{csvsimple}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage[pagestyles,extramarks]{titlesec}
+\usepackage{grffile}
+\usepackage[detect-weight=true,detect-family=true,binary-units=true]{siunitx}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage{textgreek}
+\usepackage[utf8]{inputenc}
+\newcommand{\textsemicolon}{;}
+
+\usepackage{tumexam/examconf}
+\usepackage{tumexam/creditbox}
+\usepackage{tumexam/unicode}
+\usepackage{tumcolor}
+\usepackage{tumcontact}
+\usepackage{tumfonts}
+
+
+\geometry{%
+	a4paper,
+	top		= 3cm,
+	bottom		= 2cm,
+	left		= 1.5cm,
+	right		= 1.5cm,
+	headheight	= 1cm,
+	headsep		= 1cm,
+}
+
+\localetext{\sisetup{locale=US}}{\sisetup{locale=DE}}
+
+\newpagestyle{coverpage}{%
+	\sethead{}{\TUMheader{1cm}}{}
+}
+\setlength{\parindent}{0pt}
+\let\origitemize\itemize
+\def\itemize{\origitemize\itemsep-2pt}
+
+\def\sourcedir{binder-in/\jobname}
+\def\binderinfo{\sourcedir/binder-info.csv}
+\edef\bindercorrections{\sourcedir/binder-corrections.csv}
+\edef\pages{\sourcedir/pages.csv}
+\edef\crossinfo{\sourcedir/cross-info.csv}
+
+
+\newcommand{\resulttable}[2]{%
+	\begin{tabular}{r}\bfseries#1\\\hline#2\end{tabular}%
+	\ignorespaces%
+}
+
+\newcommand{\gradeinterval}{%
+	$[\num{\gradeintervallow};
+	\if\relax\gradeintervalhigh\relax
+		\infty
+	\else
+		\num{\gradeintervalhigh}
+	\fi)$%
+}
+
+
+\renewcommand{\arraystretch}{1.2}
+
+\begin{document}
+\pagestyle{coverpage}
+
+\textcolor{TUMRed}{\footnotesize\bfseries\copyrighttext}
+
+\vspace{1cm}
+
+\csvreader[head to column names,separator=semicolon]{\binderinfo}{
+}{%
+	\begin{center}
+		\hrule
+		\vspace{2ex}
+		\textbf{\Large \thetitle}
+
+		\vspace{2ex}
+		\begin{tabular}{llp{.5cm}ll}
+			\textbf{\modulename:}& \themodule
+				&& \textbf{\datename:}& \theexamdate \\
+			\textbf{\examinername:}& \theexaminer
+				&& \textbf{\examname:}& \thetype \\
+		\end{tabular}
+		\vspace{2ex}
+		\hrule
+	\end{center}
+
+	\vspace{1ex}
+
+	\begin{center}
+		\begin{tabular}{llp{.5cm}ll}
+			\textbf{\firstnamename:}
+			& \firstname
+			&& \textbf{\registrationname, UIDs:}
+			& \matrikel, \erid\,/\,%
+				\if\relax\srid\relax%
+					--%
+				\else%
+					\srid%
+				\fi\\
+			\textbf{\lastnamename:}
+			& \lastname
+			&& \textbf{\updatename:}
+			& \today
+		\end{tabular}%
+	\end{center}
+
+	\vspace{1ex}
+
+	\begin{center}
+		\if\relax\finalcredit\relax
+			\resulttable{$\mathbit\Sigma$ (\thetype)}{\examcredit}
+			\if\relax\examgrade\relax\else
+				\resulttable{\gradename\ (\thetype)}{\examgrade}
+			\fi
+		\else
+			\if\relax\finalgrade\relax
+				\if\relax\bonuscredit\relax
+					\resulttable{$\mathbit\Sigma$ (\thetype)}{\finalcredit}
+					\if\relax\grade\relax\else
+						\resulttable{\gradename\ (\thetype)}{\grade}
+						\resulttable{\gradeintervalname}{\gradeinterval}
+					\fi
+				\else
+					\resulttable{$\mathbit\Sigma$ (\thetype)}{\examcredit}
+					\if\relax\examgrade\relax\else
+						\resulttable{\gradename\ (\thetype)}{\examgrade}
+					\fi
+					\resulttable{$\mathbit\Sigma$ (Bonus)}{\bonuscredit}
+					\resulttable{$\mathbit\Sigma$}{\finalcredit}
+					\if\relax\grade\relax\else
+						\resulttable{\gradename}{\grade}
+						\resulttable{\gradeintervalname}{\gradeinterval}
+					\fi
+				\fi
+			\else
+				\if\relax\gradebonus\relax
+					\if\relax\bonuscredit\relax
+						\resulttable{$\mathbit\Sigma$ (\thetype)}{\finalcredit}
+						\resulttable{\gradename\ (\thetype)}{\bfseries\finalgrade}
+					\else
+						\resulttable{$\mathbit\Sigma$ (\thetype)}{\examcredit}
+						\resulttable{\gradename\ (\thetype)}{\examgrade}
+						\resulttable{$\mathbit\Sigma$ (Bonus)}{\bonuscredit}
+						\resulttable{$\mathbit\Sigma$}{\finalcredit}
+						\resulttable{\gradename}{\bfseries\finalgrade}
+					\fi
+					\resulttable{\gradeintervalname}{\gradeinterval}
+				\else
+					\if\relax\bonuscredit\relax
+						\resulttable{$\mathbit\Sigma$ (\thetype)}{\finalcredit}
+						\resulttable{\gradename\ (\thetype)}{\grade}
+					\else
+						\resulttable{$\mathbit\Sigma$ (\thetype)}{\examcredit}
+						\resulttable{\gradename\ (\thetype)}{\examgrade}
+						\resulttable{$\mathbit\Sigma$ (Bonus)}{\bonuscredit}
+						\resulttable{$\mathbit\Sigma$}{\finalcredit}
+						\resulttable{\gradename}{\grade}
+					\fi
+					\resulttable{\gradeintervalname}{\gradeinterval}
+					\resulttable{\localetext{Grade bonus}{Notenbonus}}{\gradebonus}
+					\resulttable{\localetext{Final grade}{Endnote}}{\bfseries\finalgrade}
+
+				\fi
+			\fi
+		\fi
+	\end{center}
+
+	\begin{center}
+		\textcolor{TUMRed}{\textbf{\input{\sourcedir/status}}}
+	\end{center}
+
+	\footnotesize
+
+	\vspace{1ex}
+	\textbf{\notesname:}\\[-\baselineskip]
+	\bindernotes
+}
+
+\vspace{2ex}
+\textbf{\correctionsname:}\\
+\correctionnotes
+
+\begin{center}
+	\color{TUMBlue}
+	\begin{tabular}{rrrp{12.5cm}}
+		\hline
+		\textbf{\problemname}
+		& \textbf{\correctionname}
+		& \textbf{\creditsname}
+		& \textbf{\annotationname}\\
+		\hline
+		\csvreader[head to column names, separator=semicolon,%
+				late after line=\\]{\bindercorrections}{}
+		{
+			\problem\,\subproblem) & \pass &
+			\if\relax\status\relax\else
+				\ifdim\status pt>0pt%
+					\textcolor{TUMGreen}{+\status}%
+				\else\ifdim\status pt<0pt%
+					\textcolor{TUMRed}{\status}%
+				\else%
+					\textcolor{TUMRed}{\textpm\status}%
+				\fi\fi\,/\,%
+			\fi \credit &
+			\if\relax\feedback\relax\else%
+				\textcolor{black}{\feedback}\newline
+			\fi%
+			\comment
+		}
+		\hline
+	\end{tabular}
+\end{center}
+
+\clearpage
+
+\pagestyle{empty}
+
+\edef\pagelist{}
+\csvreader[head to column names,separator=semicolon]{\pages}{}{%
+	\edef\pagelist{\pagelist,\file/\crosses/\credits/\islandscape}%
+}
+\makeatletter
+\foreach \file/\crosses/\credits/\islandscape in \pagelist {%
+	\ifx\file\empty\else%
+	\ifnum\islandscape=1%
+		\pdfpageattr\expandafter{\the\pdfpageattr/Rotate 90}%
+	\fi%
+	\begin{tikzpicture}[remember picture,overlay]%
+		\ifnum\islandscape=1%
+			\node[inner sep=0pt,rotate=90] at (current page.center)
+				{\includegraphics[height=\paperwidth]{\sourcedir/\file}};
+		\else%
+			\node[inner sep=0pt] at (current page.center)
+				{\includegraphics[height=\paperheight]{\sourcedir/\file}};
+		\fi%
+		\node[TUMRed,font=\bfseries\footnotesize,below,yshift=-3mm]
+			at (current page.north) {\copyrightshorttext};
+		\node[TUMRed,font=\bfseries\footnotesize,rotate=90,below,yshift=-3mm]
+			at (current page.west) {\copyrightshorttext};
+		\node[TUMRed,font=\bfseries\footnotesize,rotate=90,above,yshift=3mm]
+			at (current page.east) {\copyrightshorttext};
+	\end{tikzpicture}%
+
+	\begin{tikzpicture}[remember picture,overlay]
+		\csvreader[head to column names, separator=semicolon]{\sourcedir/\crosses}{}{%
+			\ifnum\status=1%
+				\ifnum\islandscape=1%
+					\node[tumexam@style@cbox,draw=TUMRed,fill=none,
+						line width=0.1\tumexam@cboxwidth] at
+						($(current page.south east)+(-\ypos sp,\xpos sp)$) {};
+				\else%
+					\node[tumexam@style@cbox,draw=TUMRed,fill=none,
+						line width=0.1\tumexam@cboxwidth] at
+						($(current page.south west)+(\xpos sp,\ypos sp)$) {};
+				\fi%
+			\fi%
+		}%
+		\csvreader[head to column names, separator=semicolon]{\sourcedir/\credits}{}{%
+			\ifnum\islandscape=1%
+				\node[left,TUMRed,font=\bfseries,rotate=90] at
+					($(current page.south east)+(-\ypos sp,\xpos sp)+(-1ex,0cm)$)
+					{\num{\credits}};
+			\else%
+				\node[left,TUMRed,font=\bfseries] at
+					($(current page.south west)+(\xpos sp,\ypos sp)+(-.5cm,1ex)$)
+					{\num{\credits}};
+			\fi%
+		}%
+	\end{tikzpicture}%
+	%
+	\clearpage
+	\fi%
+}%
+\makeatother
+\end{document}
+

@@ -1,0 +1,41 @@
+\documentclass[class=tumexam,tikz]{standalone}
+\usepackage{moeptikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes}
+
+\let\myshipout\shipout
+\begin{document}%
+\let\shipout\myshipout
+
+\begin{tikzpicture}[%
+	triangle/.style={draw=black,fill=white,regular polygon,regular polygon sides=3},
+	node rotated/.style={rotate=180},
+	border rotated/.style = {shape border rotate=180},
+]%
+	\node (s) at (0,0) {$s_k$};
+	\node[triangle,rotate=-90,minimum size=1.5cm] (a) at (2,0) {};
+	\node[triangle,rotate=-90,minimum size=1.5cm] (b) at (4,0) {};
+	\node[inner sep=0pt,outer sep=0pt] (add) at (6,0) {$\oplus$};
+	\node (eta) at ($(add)+(0,-2)$) {$\mathbit \eta_k$};
+	\node[triangle,rotate=-90,minimum size=1.5cm] (c) at (8,0) {};
+	\node (s2) at (10,0) {$\hat s_k$};
+
+	\draw[->,black] (s) to (a);
+	\draw[-implies,double equal sign distance,draw=black] (a.center) to
+		node[below,xshift=3mm] {$\mathbit y_k$} (b);
+	\draw[-implies,double equal sign distance,draw=black] (b.center) to (add);
+	\draw[-implies,double equal sign distance,draw=black] (eta) to (add);
+	\draw[-implies,double equal sign distance,draw=black] (add) to
+		node[below] {$\mathbit x_k$} (c);
+	\draw[->,black] (c) to (s2);
+
+	\node[triangle,rotate=-90,minimum size=1.5cm] (a) at (a) {};
+	\node[triangle,rotate=-90,minimum size=1.5cm] (b) at (b) {};
+
+	\node at (a) {$\mathbit p_k$};
+	\node at (b) {$\mathbit H_k$};
+	\node at (c) {$\mathbit g_k^{\opn H}$};
+\end{tikzpicture}%
+
+\end{document}%
+

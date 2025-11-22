@@ -1,0 +1,44 @@
+%% savepos.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2017 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/savepos}
+
+\newcounter{tumexam@poslabel}
+\newdimen\lastxpos
+\newdimen\lastypos
+
+\def\tumexam@mkposlabel#1{%
+	\pdfsavepos%
+	\write\@auxout{\string\@newl@bel{tumexam@poslabel}{#1}{{\the\pdflastxpos sp}{\the\pdflastypos sp}}}%
+}
+
+\newcommand{\tumexam@setpos}[2]{%
+	\lastxpos #1\relax%
+	\lastypos #2\relax%
+}
+
+\DeclareRobustCommand\savepos{%
+	\stepcounter{tumexam@poslabel}%
+	\expandafter\tumexam@mkposlabel\expandafter{\the\c@tumexam@poslabel}%
+	\ifcsname tumexam@poslabel@\the\c@tumexam@poslabel\endcsname%
+		\expandafter\expandafter\expandafter\tumexam@setpos%
+		\csname tumexam@poslabel@\the\c@tumexam@poslabel\endcsname\relax%
+	\fi%
+}
+
+\endinput

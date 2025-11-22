@@ -1,0 +1,83 @@
+%% sticker.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2021 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/sticker}
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{tikz}
+\RequirePackage{datamatrix}
+\RequirePackage{tumcolor}
+\RequirePackage{tumexam/examconf}
+
+\newif\ifhotspare
+
+\newcommand{\common}[4]{
+	\scriptsize
+	\node[
+		right,
+		inner sep=0pt,
+	] at (0.75\sstickerwidth, 0.45\sstickerheight) {#1};
+	\coordinate (matrikel) at (0.05\sstickerwidth, 0.75\sstickerheight);
+	\coordinate (seat) at (0.75\sstickerwidth, 0.75\sstickerheight);
+	\ifhotspare
+		\draw (matrikel) -- ++(0.65\sstickerwidth, 0);
+		\node[
+			below right,
+			inner sep=1pt,
+			font=\fontsize{3}{4}\selectfont,
+		] at (matrikel) {\registrationname};
+		\draw (seat) -- ++(0.2\sstickerwidth, 0);
+		\node[
+			below right,
+			inner sep=1pt,
+			font=\fontsize{3}{4}\selectfont,
+		] at (seat) {#3};
+	\else
+		\ifsubmission
+		\node[
+			above right,
+			inner sep=1pt,
+		] at (matrikel) {\personalsticker};
+		\else
+			\node[
+				above right,
+				inner sep=0pt,
+				font=\bfseries,
+			] at (matrikel) {#2};
+			\node[
+				above right,
+				inner sep=0pt,
+				font=\bfseries,
+			] at (seat) {#4};
+		\fi
+	\fi
+}
+
+\newcommand{\sticker}[5]{%
+	\begin{tikzpicture}%
+		\useasboundingbox (0, 0) rectangle (\sstickerwidth, \sstickerheight);%
+		\common{#2}{#3}{#4}{#5}%
+		\edef\studentcode{#1-#2}%
+		\node[%
+			color=\ifhotspare TUMRed\else TUMDarkerBlue\fi,%
+		] at (0.375\sstickerwidth, 0.35\sstickerheight) {\datamatrix*[0.7mm]{\studentcode}};%
+	\end{tikzpicture}%
+}%
+
+
+\endinput

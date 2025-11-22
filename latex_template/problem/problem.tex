@@ -1,0 +1,136 @@
+\problem{Creating problems}
+
+This section describes how the problems of an exam are created.
+It is advisable to not only read this document, but also have a look at the source code of the sample problems.
+
+\vspace{\baselineskip}
+\textbf{Hint:} Problems that can be solved without solving previous subproblems first are marked by *. (It is up to you whether or not you want to tell that your students, but if you do, please do it carefully.)
+
+\subproblem*{1}
+First, we need to declare a problem.
+\begin{solutionbox}[2cm]
+	\verb|\problem{The problem title}|
+
+	\correction{Here afterwards, we can insert arbitrary material like text or pictures.}
+\end{solutionbox}
+
+\subproblem{1}
+Then, we need to declare the subproblems.
+\begin{solutionbox}[3cm]
+	\verb|\subproblem{1}| \quad or\quad\verb|\subproblem*{1}|
+
+	\correction{The argument (number) is the amount of credits for the subproblem.}
+
+	\correction{The star-version just creates a star next to the subproblem number.
+	This could e.\,g. indicate subproblems wich are solvable independently.}
+\end{solutionbox}
+
+\vspace{2em}
+There are different environments to create solutionboxes.
+
+\subproblem{1}
+How can we define a normal solutionbox of 3\,cm in height?
+%FIXME: include the siuntix package by default with sensible options
+
+\begin{solutionbox}[3cm]
+	\begin{verbatim}
+		\begin{solutionbox}[3cm]
+		This is the solution.
+		\end{solutionbox}
+	\end{verbatim}
+	\correction{The optional argument specifies the height of the solutionbox.}
+\end{solutionbox}
+
+\subproblem{1}
+How can we annotate the solution with correction notes?
+
+\begin{solutionbox}[3cm]
+	\verb|\credit| \credit\\[0.5em]
+	\verb|\hcredit| \hcredit\\[0.5em]
+	\verb|\correction{| \correction{This is a correction note.} \verb|}|
+\end{solutionbox}
+
+\subproblem{1}
+How can we define a solutionbox with instructions?
+
+\begin{instructionbox}[5cm]
+	\begin{verbatim}
+		\begin{instructionbox}
+			This is instructiontext, e.\g. a table preprint
+			\solution{
+	\end{verbatim}
+	\solution{\texttt{This is the solution.}}
+	\begin{verbatim}
+		}
+		\end{instructionbox}
+	\end{verbatim}
+
+	\correction{Note: instructionboxes allow no text input in the PDF as it would interfere with instructions}
+\end{instructionbox}
+
+\newpage
+
+\subproblem{1}
+How can we define a solutionbox with gridlines?
+
+\begin{gridsolutionbox}[3cm]
+	\begin{verbatim}
+		\begin{gridsolutionbox}
+			This is the solution.
+		\end{gridsolutionbox}
+	\end{verbatim}
+\end{gridsolutionbox}
+
+\subproblem{1}
+How can we define a solutionbox with grid and instructions?
+
+\begin{gridinstructionbox}[5cm]
+	\begin{verbatim}
+		\begin{gridinstructionbox}
+			This is instructiontext, e.\g. a table preprint
+			\solution{
+	\end{verbatim}
+	\solution{\texttt{This is the solution.}}
+	\begin{verbatim}
+		}
+		\end{gridinstructionbox}
+	\end{verbatim}
+
+	\correction{Note: instructionboxes allow no text input in the PDF as it would interfere with instructions}
+\end{gridinstructionbox}
+
+
+\subproblem*{1}
+\glqq{}Ich bitte Sie, das neue Corporate Design konsequent umzusetzen.
+Sehen Sie darin eine Loyalitätspflicht der Hochschulmitglieder, damit sich der Hinweis auf die Rechtsverbindlichkeit erübrigen kann.\grqq{}\,\footnote{Wolfgang A.\ Herrmann, Corporate Design Handbuch 2016}
+
+\vspace{\baselineskip}
+For that reason, TUMexam is based on Helvetica, and we do our best to convince you of Helvetica--even in math mode:
+
+\begin{align*}
+	\text{mathnormal}
+		&& abcdefghhjkklmnopqrstuvwxyz\\
+		&& ABCDEFGHJKLMNOPQRSTUVWXYZ\\
+		&& 1234567890\\
+		&&
+		\alpha\beta\gamma\delta\epsilon\zeta\eta\theta\kappa\lambda\mu\nu\xi\pi\rho\sigma\tau\phi\chi\psi\omega\\
+		&& \Delta\Theta\Lambda\Pi\Phi\Psi\Omega\\
+	\text{mathbit}
+		&& \mathbit{abcdefghjklmnopqrstuvwxyz}\\
+		&& \mathbit{ABCDEFGHIJKLMNOPQRSTUVWXYZ}\\
+		&& \mathbit{01234567890}\\
+		&& \mathbit{\alpha\beta\gamma\delta\epsilon\zeta\eta\theta\kappa\lambda\mu\nu\xi\pi\rho\sigma\tau\phi\chi\psi\omega}\\
+		&& \mathbit{\Delta\Theta\Lambda\Pi\Phi\Psi\Omega}\\
+	\text{mathcal}
+		&& \mathcal{ABCDEFGHIJKLMNOPQRSTUVXYZ}\\
+%	\text{mathcal+mathbit}
+%		&& \mathcal{\mathbit{ABCDEFGHIJKLMNOPQRSTUVXYZ}}\\
+%FIXME broken
+	\text{symbols}
+		&& \sum_{n=1}^N \frac{N(N-1)}{2}, \quad
+		\frac{1}{2\pi}\int_{-\infty}^\infty f(x) e^{-j\omega t} \pd{t}\\
+	\text{addons}
+		&& \pr{X=x\,|\,Y=y}, \var{x}, \expect{X}
+\end{align*}
+
+If you plan to disobey this request, you may use computer modern instead by setting \verb|\seriftrue| in \verb|examconf.tex|.

@@ -1,0 +1,12 @@
+WARNING
+=======
+
+You should not change files in this directory by hand since they are generated
+by your TUMexam instance when creating or modifying an exam.
+
+Changes made to those files will be ignored when being push to your instance
+(either by Git or via ZIP upload). In addition, you will encounter merge
+conflicts with Git.
+
+Please use the web interface to make the appropriate changes.
+
