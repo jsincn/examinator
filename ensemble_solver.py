@@ -321,11 +321,11 @@ class EnsembleCoordinator:
         - Arbiter: gpt-4o-mini (cost-effective evaluation)
         """
         self.solvers = [
-            Solver(model="gpt-4o-mini", name="Solver-1-GPT4oMini"),
-            Solver(model="gpt-3.5-turbo", name="Solver-2-GPT35"),
-            Solver(model="gpt-4o-mini", name="Solver-3-GPT4oMini")
+            Solver(model="gpt-4o", name="Solver-1-GPT4o"),
+            Solver(model="gpt-4o-mini", name="Solver-2-GPT4oMini"),
+            Solver(model="gpt-4o", name="Solver-3-GPT4o")
         ]
-        self.arbiter = Arbiter(model="gpt-4o-mini")
+        self.arbiter = Arbiter(model="gpt-4o")
         self.max_iterations = max_iterations
     
     def normalize_answer(self, answer: str) -> str:

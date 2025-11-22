@@ -11,6 +11,9 @@ from data_model import (
 from build_exam import build_exam
 from dotenv import load_dotenv
 
+from ensemble_solver import EnsembleCoordinator
+from parsing_new import parse_exam_complete
+
 load_dotenv()
 
 
@@ -561,10 +564,14 @@ with left_col:
                 
                 # Small delay for animation effect
                 time.sleep(0.15)
-            
-            # Build the exam with status updates
-            exam = get_dummy_exam()
+
+            # Load and parse the exam
+            exam = parse_exam_complete(uploaded_file)
+                                       
+
             exam_path, solution_path = build_exam(exam, status_callback=update_status)
+            print(f"Exam built at: {exam_path}")
+            print(f"Solution built at: {solution_path}")
             
             # Final update: show completed step
             progress_placeholder.progress(1.0)
@@ -580,48 +587,48 @@ with left_col:
             st.session_state["exam_built"] = True
 
 
-# Right column - Exam Details (will be populated when exam is built)
-with right_col:
-    if uploaded_file is None or not st.session_state.get("exam_built"):
-        st.markdown("#### Exam Details")
-        st.markdown("<div class='status-text-secondary' style='font-size: 0.8125rem; margin-top: 0.5rem;'>Exam details will appear here after processing</div>", unsafe_allow_html=True)
-    else:
-        # Display exam details on the right side
-        st.markdown("#### Exam Details")
+# # Right column - Exam Details (will be populated when exam is built)
+# with right_col:
+#     if uploaded_file is None or not st.session_state.get("exam_built"):
+#         st.markdown("#### Exam Details")
+#         st.markdown("<div class='status-text-secondary' style='font-size: 0.8125rem; margin-top: 0.5rem;'>Exam details will appear here after processing</div>", unsafe_allow_html=True)
+#     else:
+#         # Display exam details on the right side
+#         st.markdown("#### Exam Details")
         
-        # Show exam summary
-        if "exam_summary" not in st.session_state:
-            exam = get_dummy_exam()
-            st.session_state["exam_summary"] = {
-                "title": exam.exam_title,
-                "module": exam.module,
-                "total_points": exam.total_points,
-                "total_time": exam.total_time_min,
-                "num_problems": len(exam.exam_content.problems)
-            }
+#         # Show exam summary
+#         if "exam_summary" not in st.session_state:
+#             exam = get_dummy_exam()
+#             st.session_state["exam_summary"] = {
+#                 "title": exam.exam_title,
+#                 "module": exam.module,
+#                 "total_points": exam.total_points,
+#                 "total_time": exam.total_time_min,
+#                 "num_problems": len(exam.exam_content.problems)
+#             }
         
-        summary = st.session_state["exam_summary"]
-        st.markdown(f"""
-        <div class="exam-details-container" style="padding: 1rem; border-radius: 12px; margin-top: 1rem; background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1d1d1f;">
-            <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
-                <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Title</strong>
-                <span class="exam-details-value" style="color: #1d1d1f;">{summary['title']}</span>
-            </div>
-            <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
-                <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Module</strong>
-                <span class="exam-details-value" style="color: #1d1d1f;">{summary['module']}</span>
-            </div>
-            <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
-                <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Total Points</strong>
-                <span class="exam-details-value" style="color: #1d1d1f;">{summary['total_points']}</span>
-            </div>
-            <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
-                <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Duration</strong>
-                <span class="exam-details-value" style="color: #1d1d1f;">{summary['total_time']} minutes</span>
-            </div>
-            <div style="font-size: 0.875rem; color: #1d1d1f;">
-                <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Problems</strong>
-                <span class="exam-details-value" style="color: #1d1d1f;">{summary['num_problems']}</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+#         summary = st.session_state["exam_summary"]
+#         st.markdown(f"""
+#         <div class="exam-details-container" style="padding: 1rem; border-radius: 12px; margin-top: 1rem; background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: #1d1d1f;">
+#             <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
+#                 <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Title</strong>
+#                 <span class="exam-details-value" style="color: #1d1d1f;">{summary['title']}</span>
+#             </div>
+#             <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
+#                 <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Module</strong>
+#                 <span class="exam-details-value" style="color: #1d1d1f;">{summary['module']}</span>
+#             </div>
+#             <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
+#                 <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Total Points</strong>
+#                 <span class="exam-details-value" style="color: #1d1d1f;">{summary['total_points']}</span>
+#             </div>
+#             <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: #1d1d1f;">
+#                 <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Duration</strong>
+#                 <span class="exam-details-value" style="color: #1d1d1f;">{summary['total_time']} minutes</span>
+#             </div>
+#             <div style="font-size: 0.875rem; color: #1d1d1f;">
+#                 <strong class="exam-details-label" style="display: block; margin-bottom: 0.25rem; color: #86868b;">Problems</strong>
+#                 <span class="exam-details-value" style="color: #1d1d1f;">{summary['num_problems']}</span>
+#             </div>
+#         </div>
+#         """, unsafe_allow_html=True)

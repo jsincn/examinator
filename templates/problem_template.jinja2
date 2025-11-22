@@ -1,21 +1,15 @@
-% Problem template generated from ExamQuestion
-\problem{{'{'}}{{ question_title if question_title else '' }}{{'}'}}
-{% if question_title %}
-{{ question_title }}
+\problem{ {{ question_title | default("") }} }
 
 {% if question_description_latex %}
-{{ question_description_latex }}
-{% endif %}
+{{ question_description_latex | fix_latex_filter }}
 {% endif %}
 
 {% for idx, sub_question in sub_questions %}
-\subproblem{{ '*' if sub_question.starred else '' }}{{'{'}}{{ sub_question.available_points }}{{'}'}}
-{{ sub_question.question_text_latex }}
+\subproblem{{ "*" if sub_question.starred else "" }}{ {{ sub_question.available_points }} }
+{{ sub_question.question_text_latex | fix_latex_filter }}
 
-\begin{solutionbox}[{{ sub_question.box_height|default('4cm') }}]
-{{ sub_question.question_answer_latex }}
+\begin{solutionbox}[2cm]
+{{ sub_question.question_answer_latex | fix_latex_filter }}
 \end{solutionbox}
 
-{% if not loop.last %}
-{% endif %}
 {% endfor %}
