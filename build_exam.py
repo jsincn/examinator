@@ -167,7 +167,7 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
             for sub_question in new_problem.sub_questions:
                 if isinstance(sub_question, SubQuestion):
                     print("Solving sub-question")
-                    solution = solver.solve(q_description + "\n" + sub_question.question_text_latex)
+                    solution = solver.solve(q_description + "\n" + sub_question.question_text_latex, available_points=sub_question.available_points)
                     sub_question.question_answer_latex = solution['final_answer']
             problem_latex = render_problem(new_problem, problem_number=idx)
         
@@ -234,4 +234,4 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
     
     # Return None for PDF paths since compilation is disabled
     # The LaTeX files are still generated and available in base_dir
-    # return None, None
+    return None, None

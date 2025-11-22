@@ -4,4 +4,4 @@ jinja2
 openai
 python-dotenv
 pydantic
-pymupdf
+PyMuPDF
