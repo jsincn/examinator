@@ -1,0 +1,59 @@
+%% unicode.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2021-2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/unicode}
+
+% Setup special unicode characters that cannot be typeset by default
+\RequirePackage{newunicodechar}
+
+% Symbols used in students' names
+\newunicodechar{ơ}{o} % FIXME how to typeset horned characters?
+\newunicodechar{ư}{u} % FIXME how to typeset horned characters?
+\newunicodechar{ạ}{\d{a}}
+\newunicodechar{ầ}{\`{\^{a}}}
+\newunicodechar{ọ}{\d{o}}
+\newunicodechar{ỗ}{ô}
+\newunicodechar{ỳ}{\`{y}}
+\newunicodechar{ễ}{\^{e}}
+
+% Symbols commonly used on iOS devices
+\newunicodechar{ˋ}{\`{}}
+\newunicodechar{−}{${}-{}$}
+\newunicodechar{）}{)}
+
+% Other symbols that should be typeset in math mode instead of unicode
+\newunicodechar{ϕ}{$\Phi$} % causes a redefinition, but \textphi is not available in T1
+\newunicodechar{ℂ}{$\mathbb{C}$}
+\newunicodechar{ℕ}{$\mathbb{N}$}
+\newunicodechar{ℝ}{$\mathbb{R}$}
+\newunicodechar{ℤ}{$\mathbb{Z}$}
+\newunicodechar{⇒}{$\Rightarrow$}
+\newunicodechar{∆}{$\Delta$}
+\newunicodechar{∈}{$\in$}
+\newunicodechar{∑}{$\sum$}
+\newunicodechar{√}{$\sqrt{}$}
+\newunicodechar{∞}{$\infty$}
+\newunicodechar{∩}{$\cap$}
+\newunicodechar{≙}{$\overset{\Delta}{=}$}
+\newunicodechar{≠}{$\neq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{⋶}{$\in$}
+\newunicodechar{│}{$\mid$}
+\newunicodechar{𝔽}{$\mathbb{F}$}
+

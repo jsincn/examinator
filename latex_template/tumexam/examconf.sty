@@ -1,0 +1,395 @@
+%% examconf.sty
+%
+% This work may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3 of this license
+% or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX version
+% 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Stephan Günther.
+%
+% Copyright 2016-2022 Chair of Network Architectures and Services, TUM
+%
+% This work consists of the files listed in manifest.txt.
+
+\ProvidesPackage{tumexam/examconf}
+
+% remove unnecessary pdf infos for deterministic builds
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=-1
+
+\RequirePackage[utf8]{inputenc}
+
+\newcommand{\lang}[1]{\PassOptionsToPackage{#1}{tumlang}}
+\newcommand{\department}[1]{\def\thedepartment{#1}}%
+\newcommand{\departmentcode}[1]{\def\thedepartmentcode{#1}}%
+\newcommand{\chair}[1]{\def\thechair{#1}}%
+\newcommand{\examiner}[1]{\def\theexaminer{#1}}
+\renewcommand{\title}[1]{\def\thetitle{#1}}
+\newcommand{\shorttitle}[1]{\def\theshorttitle{#1}}
+\newcommand{\examid}[1]{\def\theexamid{#1}}
+\newcommand{\type}[1]{\def\thetype{#1}}
+\newcommand{\module}[1]{\def\themodule{#1}}
+
+\newcommand{\startdate}[3]{
+	\AtEndOfPackage{\newdate{examstartdate}{#1}{#2}{#3}}
+}
+\newcommand{\stopdate}[3]{
+	\AtEndOfPackage{\newdate{examstopdate}{#1}{#2}{#3}}
+}
+% FIXME: allow acces to all individual times and provide one macro to print the time range
+\newcommand{\theexamstartdate}{\displaydate{examstartdate}}
+\newcommand{\theexamstopdate}{\displaydate{examstopdate}}
+
+\def\examconf@formattime#1[#2:#3]{%
+	\expandafter\def\csname the@#1\endcsname{#2:#3}
+	\expandafter\def\csname the#1\endcsname{\formattime{#2}{#3}{0}}
+}
+\newcommand{\starttime}[1]{\examconf@formattime{starttime}[#1]}
+\newcommand{\stoptime}[1]{\examconf@formattime{stoptime}[#1]}
+
+\newcommand{\theexamdate}{%
+	\theexamstartdate%
+}
+
+\newif\ifsubmission
+\newif\ifregistrationsticker
+\newif\ifsinglepass
+\newif\ifhalfcredits
+\newif\ifexternalproblems
+\newif\ifserif
+\newif\ifcoversheet
+\newif\ifsubproblemarabic
+\newif\ifnoproblemcredits
+\newif\ifnoproblem
+\newif\ifnotitle
+\newif\ifnocorrectorbox
+\newif\ifsingleside
+\newif\ifminimaltitlepage
+\newif\iftoc
+
+\newif\iftumexam@staple
+\newif\iftumexam@booklet
+\newcommand{\nostaple}{\tumexam@staplefalse\tumexam@bookletfalse}
+\newcommand{\onestaple}{\tumexam@stapletrue\tumexam@bookletfalse}
+\newcommand{\booklet}{\tumexam@stapletrue\tumexam@booklettrue}
+
+\newlength{\gridsize}
+
+\newlength{\sstickerwidth}
+\newlength{\sstickerheight}
+\newlength{\cstickerwidth}
+\newlength{\cstickerheight}
+
+\newcommand{\examcode}{\thedepartmentcode-\theshorttitle-\theexamid-\getdateyear{examstartdate}\twodigit{\getdatemonth{examstartdate}}\twodigit{\getdateday{examstartdate}}}
+
+
+\input{conf/generated/examconf}
+\input{conf/generated/code}
+
+\RequirePackage{tumlang}
+
+\RequirePackage{datetime}
+
+\DeclareRobustCommand*{\datengerman}{%
+\renewcommand{\formatdate}[3]{%
+\@day=##1\relax\@month=##2\relax\@year=##3\relax
+\ifshowdow\dayofweekname{##1}{##2}{##3}, \fi
+\number\@day.~\monthnamengerman[\@month]\space\number\@year}}%
+\global\let\datengerman\datengerman
+
+\ifserif
+	\RequirePackage[serif]{tumfonts}
+\else
+	\RequirePackage{tumfonts}
+\fi
+
+\setlength{\gridsize}{5mm}
+
+\setlength{\sstickerwidth}{38.1mm}
+\setlength{\sstickerheight}{21.2mm}
+
+\def\listsfolder{.lists}
+\def\imagefolder{.images}
+
+\localemacro{\datename}{Date}{Datum}
+\localemacro{\timename}{Time}{Uhrzeit}
+\localemacro{\signaturename}{Signature}{Unterschrift}
+\localemacro{\firstnamename}{First name}{Vorname}
+\localemacro{\lastnamename}{Last name}{Nachname}
+\localemacro{\registrationname}{Registration number}{Matrikelnummer}
+\localemacro{\modulename}{Module}{Modul}
+\localemacro{\lecturename}{Lecture}{Vorlesung}
+\localemacro{\examname}{Examination}{Prüfung}
+\localemacro{\examinername}{Examiner}{Prüfer}
+\localemacro{\responsibilityname}{Responsible staff member}{Hörsaalverantwortlicher}
+\localemacro{\supervisorsname}{Supervisors}{Aufsichtsführende}
+\localemacro{\examname}{Exam}{Klausur}
+\localemacro{\pagename}{Page}{Seite}
+\localemacro{\problemname}{Problem}{Aufgabe}
+\localemacro{\creditsname}{credits}{Punkte}
+\localemacro{\creditname}{credit}{Punkt}
+\localemacro{\gradename}{Grade}{Note}
+\localemacro{\gradeintervalname}{Grade intervall}{Notenintervall}
+\localemacro{\correctionname}{Correction}{Korrektur}
+\localemacro{\correctionsname}{Corrections}{Korrekturen}
+\localemacro{\correctionpassa}{I}{I}
+\localemacro{\correctionpassb}{II}{II}
+\localemacro{\samplesolutionname}{Sample Solution}{Lösungsvorschlag}
+\localemacro{\correctionnotesname}{Correction Notes}{Korrekturanmerkungen}
+\localemacro{\examplename}{Example}{Beispiel}
+\localemacro{\protocolname}{Protocol}{Protokoll}
+\localemacro{\attendeelistname}{Attendeelist}{Anwesenheitsliste}
+\localemacro{\seatplanname}{Seatplan}{Sitzplan}
+\localemacro{\roomname}{Room}{Raum}
+\localemacro{\rowname}{Row}{Reihe}
+\localemacro{\seatname}{Seat}{Platz}
+\localemacro{\notename}{Note}{Hinweis}
+\localemacro{\notesname}{Notes}{Hinweise}
+\localemacro{\examnotesname}{Working instructions}{Bearbeitungshinweise}
+\localemacro{\annotationname}{Annotations}{Anmerkungen}
+\localemacro{\updatename}{Last update}{Zuletzt aktualisiert}
+\localemacro{\stickernote}{Place student sticker here}{Sticker mit SRID hier einkleben}
+\localemacro{\submissionnote}{Sticker will be generated}{Sticker wird generiert}
+\localemacro{\personalsticker}{Personal sticker}{Persönlicher Sticker}
+\localemacro{\codeofconductcompliance}{Compliance to the code of conduct}{Bestätigung der Verhaltensregeln}
+\localemacro{\personalizationnotesname}{Note}{Hinweise zur Personalisierung}
+\localemacro{\personalizationnotessticker}{%
+	\begin{itemize}\itemsep-2pt
+		\item During the attendance check a sticker containing a unique code will be put on this exam.
+		\item This code contains a unique number that associates this exam with your registration number.
+		\item This number is printed both next to the code and to the signature field in the attendance check list.
+	\end{itemize}
+}{%
+	\begin{itemize}\itemsep-2pt
+		\item Ihre Prüfung wird bei der
+			Anwesenheitskontrolle durch Aufkleben eines Codes personalisiert.
+		\item Dieser enthält lediglich eine fortlaufende Nummer, welche auch auf der Anwesenheitsliste neben dem Unterschriftenfeld vermerkt ist.
+		\item Diese wird als Pseudonym verwendet, um eine eindeutige Zuordnung Ihrer Prüfung zu ermöglichen.
+	\end{itemize}
+}
+\localemacro{\personalizationnotessubmission}{%
+	\textbf{\codeofconductcompliance}\\
+	I hereby assure that I solve and submit this exam myself under my own name by only using the allowed tools listed below.
+}{%
+	\textbf{\codeofconductcompliance}\\
+	Hiermit versichere ich, dass ich diese Klausur ausschließlich unter Verwendung der unten aufgeführten Hilfsmittel selbst löse und unter meinem Namen abgebe.
+}
+\localemacro{\codeofconductsignature}{%
+	\signaturename{} or full name if no pen input available
+}{%
+	\signaturename{} oder vollständiger Name, falls keine Stifteingabe verfügbar
+}
+\localemacro{\personalizationnotesbox}{%
+	\begin{itemize}\itemsep-2pt
+		\item\vskip-0.3\baselineskip Cross your \registrationname (with leading zero).
+			It will be evaluated automatically.
+		\item Sign in the corresponding signature field.
+	\end{itemize}
+}{%
+	\begin{itemize}\itemsep-2pt
+		\item\vskip-0.3\baselineskip Kreuzen Sie Ihre
+			\registrationname\ an (mit führender Null).
+			Diese wird maschinell ausgewertet.
+		\item Unterschreiben Sie im dafür vorgesehenen Unterschriftenfeld.
+	\end{itemize}
+}
+\localemacro{\shortproblemtext}{The following problems can be solved independently of each other.}{Die nachfolgenden Teilaufgaben sind jeweils unabhängig voneinander lösbar.}
+\localemacro{\extraspacenote}{%
+	Additional space for solutions--clearly mark the (sub)problem your answers are related to and strike out invalid solutions.
+}{%
+	Zusätzlicher Platz für Lösungen.
+	Markieren Sie deutlich die Zuordnung zur jeweiligen Teilaufgabe.
+	Vergessen Sie nicht, ungültige Lösungen zu streichen.
+}
+\localemacro{\examemptytext}{Exam empty}{Klausur leer}
+\localemacro{\pageemptytext}{Page empty}{Seite leer}
+\localemacro{\placeonexamtext}{Place on exam}{Aufkleben}
+\localemacro{\donotremovetext}{Do not remove}{Nicht abziehen}
+\localemacro{\stickerplaceholderlabel}{Place sticker here}{Sticker hier einkleben}
+\localemacro{\stickerinstructiontext}{%
+}{%
+	Hiermit bestätige ich, dass ich vor Prüfungsbeginn darüber in Kenntnis gesetzt wurde, dass ich im Falle einer plötzlich während der Prüfung auftretenden Erkrankung das Aufsichtspersonal umgehend informieren muss.
+	Dies wird im Prüfungsprotokoll vermerkt.
+	Danach muss unverzüglich ein Rücktritt von der Prüfung beim zuständigen Prüfungsausschuss beantragt werden.
+	Ein am Prüfungstag ausgestelltes ärztliches Attest, gemäß den Regelungen des jeweiligen Prüfungsausschusses der Fakultät des betreffenden Studiengangs, ist unverzüglich nachzureichen.
+	Eine Arbeitsunfähigkeitsbescheinigung (AU) ist nicht ausreichend!
+	Wird die Prüfung hingegen in Kenntnis der gesundheitlichen Beeinträchtigung dennoch regulär beendet, kann im Nachhinein kein Prüfungsrücktritt aufgrund von Krankheit beantragt werden.
+	Wird die Prüfung wegen Krankheit abgebrochen, wird die Klausur mit der Note \glqq{}5,0 - nicht erschienen\grqq{} gemeldet und -- unabhängig von einem Rücktrittsantrag -- nicht bewertet.
+}
+\localemacro{\copyrightheadline}{Instructions regarding copyright}{Belehrung zum Urheberrecht}
+\localemacro{\copyrighttext}{%
+	The problems stated in this exam as well as any corrections done by instructors or assistants are copyright protected.
+	The electronic copy of this exam may be used for personal review only.
+	Any kind of publication is prohibited by law and will be prosecuted.
+	The legitimate interest in the proceedings remains unaffected, e.\,g. handing the exam to a commissioned lawyer.
+}{%
+	Die Fragestellung der Klausur sowie die Korrekturanmerkungen der Prüfer unterliegen dem Urheberrechtsschutz.
+	Die ausgehändigten elektronischen Kopien der Prüfungsaufgaben dürfen nur zum Zweck der Klausureinsicht genutzt werden
+	Eine Weitergabe an Dritte oder Veröffentlichung im Internet ist daher ausdrücklich verboten und zieht im Falle eines Versto\ss{}es
+	rechtliche Konsequenzen nach sich.
+	Das berechtigte Rechtsschutzinteresse bleibt davon unberührt (z.\,B.\ Weitergabe der Prüfungsaufgaben an eine/einen bevollmächtigte(n) Rechtsanwältin/Rechtsanwalt).
+}
+\localemacro{\copyrightshorttext}{For personal review only}{Nur zur persönlichen Einsicht}
+\localemacro{\bindernotes}{%
+	\begin{itemize}
+		\item Please make sure that the total amount of credits stated above is correct.
+		\if\relax\bonuscredit\gradebonus\relax\else
+		\item Note that a potential bonus is only considered if the final exam (without bonus) is passed.
+		\fi
+		\ifsinglepass\else
+		\item Solely the second correction (green color) is decisive.
+		\fi
+	\end{itemize}
+	\input{conf/bindernotes.tex}
+}{%
+	\begin{itemize}
+		\item Versichern Sie sich, dass die Gesamtanzahl der Punkte wie oben angegeben korrekt ist.
+		\if\relax\bonuscredit\gradebonus\relax\else
+		\item Beachten Sie, dass ein potentieller Bonus nur dann berücksichtigt wird, wenn die Prüfung ohne Bonus bestanden ist.
+		\fi
+		\ifsinglepass\else
+		\item Einzig die in grün durchgeführte Zweitkorrektur ist ausschlaggebend.
+		\fi
+	\end{itemize}
+	\input{conf/bindernotes.tex}
+}
+\localemacro{\reviewnotes}{%
+	Feedback regarding the correction is only accepted via the feedback form provided by TUMexam:
+		\begin{itemize}
+			\item State a short, objective reason for each objection.
+			\item Linked or embedded content such as images, scans, etc.\ are not considered.
+			\item Feedback is processed after the deadline.
+		\end{itemize}
+		Please note that objections via email are not accepted.
+}{%
+	Zur Einsicht gibt es keinen Präsenztermin.
+	Beanstandungen werden ausschlie\ss{}lich online entgegen genommen:
+	\begin{itemize}
+		\item Geben Sie jeweils Aufgabe und Teilaufgabe sowie eine kurze sachliche Begründung in Textform an.
+		\item Verlinkte oder eingebettete Inhalte (Bilder, Scans usw.) werden \textbf{nicht} berücksichtigt.
+		\item Die Beanstandungen werden \textbf{nach} Ende der Frist bearbeitet.
+	\end{itemize}
+	Beanstandungen via Email werden \textbf{nicht} entgegengenommen.
+}
+\localemacro{\correctionnotes}{%
+	The table below lists all corrections (image recognition and complaints during review) that are already considered in the calculation of your grade.
+	If a problem or subproblem is listed multiple times, the correction with the highest number (column ``\correctionname{}'') takes precedence.
+}{%
+	Die untenstehende Tabelle enthält alle Korrekturen (Fehler während der Bilderkennung sowie Einwände während der Einsicht), welche bereits in der Berechnung der Gesamtnote berücksichtigt sind.
+	Sollte eine Aufgabe oder Teilaufgabe mehrfach aufgelistet sein, so hat die Korrektur mit der höchsten Nummer (Spalte \glqq\correctionname{}\grqq) Präzedenz.
+}
+
+\localemacro{\mcnotes}
+{%
+	\begin{tabular}{ll}
+	\emph{Mark correct answers with a cross}
+	&
+	\hspace{1em}%
+	\makeatletter
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(0,0\tumexam@cboxwidth+0.04em)$) {\huge\texttimes};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\\
+	\emph{To undo a cross, completely fill out the answer option}
+	&
+	\makeatletter
+	\hspace{1em}%
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(0,0)$)
+				{\Large$\blacksquare$};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\\
+	\emph{To re-mark an option, use a human-readable marking}
+	&
+	\makeatletter
+	\hspace{1em}%
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(-1.25\tumexam@cboxwidth+0.04em,0.04em)$)
+				{\huge\texttimes};
+			\node at ($(0,0)$)
+				{\Large$\blacksquare$};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\end{tabular}
+}{%
+	\begin{tabular}{ll}
+	\emph{Kreuzen Sie richtige Antworten an}
+	&
+	\hspace{1em}%
+	\makeatletter
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(0,0\tumexam@cboxwidth+0.04em)$) {\huge\texttimes};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\\
+	\emph{Kreuze können durch vollständiges Ausfüllen gestrichen werden}
+	&
+	\makeatletter
+	\hspace{1em}%
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(0,0)$)
+				{\Large$\blacksquare$};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\\
+	\emph{Gestrichene Antworten können durch nebenstehende Markierung erneut angekreuzt werden}
+	&
+	\makeatletter
+	\hspace{1em}%
+	\begin{tikzpicture}
+		\node[tumexam@style@cbox] at (0,0) {};
+		\begin{pgfinterruptboundingbox}
+			\node at ($(-1.25\tumexam@cboxwidth+0.04em,0.04em)$)
+				{\huge\texttimes};
+			\node at ($(0,0)$)
+				{\Large$\blacksquare$};
+		\end{pgfinterruptboundingbox}
+	\end{tikzpicture}
+	\makeatother
+	\end{tabular}
+}
+
+\input{conf/examnotes}
+
+\ifdefined\captionsenglish
+	\addto\captionsenglish{%
+		\renewcommand{\contentsname}{\problemname{}s}%
+	}
+	\addto\captionsngerman{%
+		\renewcommand{\contentsname}{\problemname{}n}%
+	}
+\else
+	\AtBeginDocument{%
+		\addto\captionsenglish{%
+			\renewcommand{\contentsname}{\problemname{}s}%
+		}
+		\addto\captionsngerman{%
+			\renewcommand{\contentsname}{\problemname{}n}%
+		}
+	}%
+\fi
+
+\endinput

@@ -1,0 +1,57 @@
+\problem{Multiple choice problems with TUMexam}
+
+TUMexam supports the automatic evaluation of multiple choice problems (both single and multiple answer) through so called \emph{calculation functions} that are supplied as optional argument to the \verb|\subproblem| macro.
+
+
+\subproblem[binary_mc]{1}
+How can we define a multiple choice question?
+\begin{multiplechoice}
+	\item* \verb|\subproblem[<calculation_function>]{<max_credit>}|
+	\item \verb|\subproblem{<max_credit>}| \correction{This does not work as it would be a normal subproblem.}
+\end{multiplechoice}
+
+
+\subproblem{5}
+What are the available calculation functions?
+\begin{solutionbox}[13cm]
+\begin{itemize}
+	\item \verb|mc|\\
+	Every correct cross gives +1 credit, every incorrect cross gives -1 credit.
+	Missing crosses do not count.
+	The lowest possible amount of credits is 0.
+	If the specified maximum credits do not equal the number of correct answers, credits are scaled by the factor \verb|max_credit/correct_options|.
+	You \textbf{must} ensure that this fraction is a multiple of 0.5 credits.
+	\item \verb|strict_mc|\\
+	Works the same way as \verb|mc|, but a missing cross also gives -1 credit.
+	\item \verb|binary_mc|\\
+	Gives the specified maximum amount of credits if everything is correct and 0 credits otherwise.
+	\item \verb|ternary_mc|\\
+	The subproblem gives the specified amount of credits if everything is answered correctly.
+	If there is exactly one cross missing \emph{or} one wrong answer crossed, the resulting amount of credits is \verb|max_credit/2|.
+	Otherwise, the amount of credits is 0.
+
+	Note that in a problem with two correct options, crossing one correct and one incorrect answer gives 0 credits since aside from the incorrect answer there is also one correct answer missing.
+	\item \verb|per_option_mc|\\
+	In this case, each answer option is graded individually depending on whether its state (crossed or not crossed) is correct.
+	You \textbf{must} set the maxmimum number of credits to be a multiple of the total number of options, e.\,g.\ having 5 options leaves you with 5, 10, 15, \ldots as possible values.
+	Each option with correct state is than awarded 1, 2, 3, \ldots credits.
+
+	Example: A question with 2 correct options out of 5 options in total and a \verb|max_credit| of 5 would give 3 credits (!) if a student simply crosses nothing since in that case 3 options are ``correctly not crossed''.
+	If \verb|max_credit| is set to 10, the result would be 6 credits in this example.
+\end{itemize}
+\end{solutionbox}
+
+
+\subproblem[binary_mc]{1}
+What is the command to typeset instructions on how to mark correct answers?
+\begin{center}
+	\mcnotes{}
+\end{center}
+\begin{multiplechoice}
+	\item* \verb|\mcnotes{}|
+	\item \verb|\notesmc{}|
+	\item \verb|\makenotes{}|
+	\item \verb|\makemc{}|
+\end{multiplechoice}
+
+

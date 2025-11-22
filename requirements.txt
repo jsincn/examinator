@@ -1,2 +1,4 @@
 openai
 streamlit
+jinja2
+pydantic

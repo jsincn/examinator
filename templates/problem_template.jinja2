@@ -1,0 +1,14 @@
+% Problem template generated from ExamQuestion
+\problem{Problem {{ problem_number }}}
+
+{% for idx, sub_question in sub_questions %}
+\subproblem{{ '*' if sub_question.starred else '' }}{{'{'}}{{ sub_question.available_points }}{{'}'}}
+{{ sub_question.question_text_latex }}
+
+\begin{solutionbox}[{{ sub_question.box_height|default('4cm') }}]
+{{ sub_question.question_answer_latex }}
+\end{solutionbox}
+
+{% if not loop.last %}
+{% endif %}
+{% endfor %}
