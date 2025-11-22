@@ -6,6 +6,8 @@ import streamlit as st
 def generate_exam_question_with_openai(
     original_question: MultipleChoiceExamQuestion,
     variation_instruction: str = "Generate a similar question with different numbers and context",
+    variation: int = 5,
+    temperature: float = 0.7,
 ) -> MultipleChoiceExamQuestion:
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -27,6 +29,8 @@ def generate_exam_question_with_openai(
                 "5. Every sub-question must have the same number of options as in the input.\n"
                 "6. correct_option_indices must be 0-indexed and valid.\n"
                 "7. Always include all required fields, even if empty.\n"
+                "8. Variation level (0-10): 0 = adjust numbers only, keep wording almost identical, 10 completely new question (based on Course Material if provided); "
+                "10 = completely new phrasing/context but same concept and difficulty. Use the provided variation value.\n"
             )
         },
         {
@@ -52,7 +56,8 @@ def generate_exam_question_with_openai(
                 "}\n\n"
                 "Now produce a NEW variation based on the following original question:\n\n"
                 f"{original_json}\n\n"
-                f"Variation instructions: {variation_instruction}\n\n"
+                f"Variation instructions: {variation_instruction}\n"
+                f"Variation level: {max(0, min(variation, 10))}\n\n"
                 "Return ONLY valid JSON matching the schema."
             )
         }
@@ -61,6 +66,7 @@ def generate_exam_question_with_openai(
     response = client.beta.chat.completions.parse(
         model="gpt-4o-mini",
         messages=messages,
+        temperature=temperature,
         response_format=MultipleChoiceExamQuestion,
     )
 
