@@ -129,6 +129,8 @@ Final Answer: Xavier initialization. (1p)
 
 If the answer should be in LaTeX format, provide it in LaTeX.{latex_note}{points_note}
 
+Limit your response to 50 words max.
+
 Problem:
 {problem}"""
         
@@ -364,7 +366,7 @@ class EnsembleCoordinator:
         """
         self.solvers = [
             Solver(model="gpt-4o", name="Solver-1-GPT4o"),
-            Solver(model="gpt-4o-mini", name="Solver-2-GPT4oMini"),
+            Solver(model="gpt-4o", name="Solver-2-GPT4o"),
             Solver(model="gpt-4o", name="Solver-3-GPT4o")
         ]
         self.arbiter = Arbiter(model="gpt-4o")
