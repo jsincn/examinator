@@ -113,7 +113,7 @@ def override_examconf(exam: Exam, exam_config_path: str):
         f.write(examconf_content)
 
 
-def build_exam(exam: Exam):
+def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
     tmp_dir = tempfile.mkdtemp()
     shutil.copytree('./latex_template', os.path.join(tmp_dir, 'latex_template'))
     base_dir = os.path.join(tmp_dir, 'latex_template')
