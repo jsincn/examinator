@@ -16,86 +16,6 @@ from parsing_new import parse_exam_complete
 
 load_dotenv()
 
-
-def get_dummy_exam():
-    """Create a dummy exam for testing."""
-    # Create some arbitrary sub-questions
-    mc_sub_question_1 = MultipleChoiceSubQuestion(
-        question_text_latex="What is the capital of France?",
-        question_options=["Berlin", "Madrid", "Paris", "Rome"],
-        question_correct_option_indices=[2],
-        question_points=1,
-        calculation_function="binary_mc",
-        show_mc_notes=False,
-        show_corrections=True,
-    )
-
-    mc_sub_question_2 = MultipleChoiceSubQuestion(
-        question_text_latex="Which of the following are programming languages?",
-        question_options=["Python", "HTML", "Java", "CSS"],
-        question_correct_option_indices=[0, 2],
-        question_points=2,
-        calculation_function="mc",
-        show_mc_notes=False,
-        show_corrections=True,
-    )
-
-    mc_question_1 = MultipleChoiceExamQuestion(
-        total_points=1,
-        sub_questions=[mc_sub_question_1, mc_sub_question_2],
-        question_title="Multiple Choice Questions",
-        question_description_latex=r"\begin{center}\mcnotes{}\end{center}",
-    )
-
-    sub_question_1 = SubQuestion(
-        question_text_latex="What is the time complexity of binary search?",
-        question_answer_latex="O(log n)",
-        available_points=2.0,
-    )
-
-    sub_question_2 = SubQuestion(
-        question_text_latex="Explain the difference between a stack and a queue.",
-        question_answer_latex="A stack follows LIFO (Last In First Out) principle, while a queue follows FIFO (First In First Out) principle.",
-        available_points=3.0,
-    )
-
-    sub_question_3 = SubQuestion(
-        question_text_latex="What is the purpose of dynamic programming?",
-        question_answer_latex="Dynamic programming is used to solve optimization problems by breaking them down into simpler subproblems and storing the results to avoid redundant computations.",
-        available_points=5.0,
-    )
-
-    # Create exam questions
-    question_1 = ExamQuestion(
-        total_points=5,
-        sub_questions=[sub_question_1, sub_question_2],
-        question_title="Short Answer Questions",
-        question_description_latex=r"""\begin{center}Please answer the following questions concisely.\end{center}""",
-    )
-
-    question_2 = ExamQuestion(
-        total_points=5,
-        sub_questions=[sub_question_3],
-        question_title="Dynamic Programming Question",
-        question_description_latex=r"""\begin{center}Answer the following question in detail.\end{center}""",
-    )
-
-    # Create the exam
-    exam = Exam(
-        total_points=10,
-        total_time_min=90,
-        exam_content=ExamContent(problems=[mc_question_1, question_1, question_2]),
-        exam_title="Introduction to Algorithms - Midterm Exam",
-        examiner="Prof. Dr. John Smith",
-        module="CS101",
-        start_time="2025-12-01 10:00",
-        end_time="2025-12-01 11:30",
-        exam_chair="Chair of Computer Science",
-    )
-
-    return exam
-
-
 # Configure page
 st.set_page_config(
     layout="wide",
@@ -547,7 +467,7 @@ with left_col:
                     state["current_step"] = 5
                 
                 current_step = state["current_step"]
-                current_step_data = steps[current_step]
+                current_step_data = message
                 
                 # Show only the current step
                 if current_step < len(steps) - 1:
@@ -559,7 +479,7 @@ with left_col:
                     icon_svg = icon_svgs.get("✓", "✓")
                     icon_class = ""
                 
-                step_html = f'<div class="step-container {step_class}"><span class="step-number">{current_step + 1}</span><span class="status-icon {icon_class}">{icon_svg}</span><span class="step-name">{current_step_data["name"]}</span></div>'
+                step_html = f'<div class="step-container {step_class}"><span class="step-number">{current_step + 1}</span><span class="status-icon {icon_class}">{icon_svg}</span><span class="step-name">{current_step_data}</span></div>'
                 step_placeholder.markdown(step_html, unsafe_allow_html=True)
                 
                 # Small delay for animation effect
@@ -570,11 +490,11 @@ with left_col:
                                        
 
             exam_path, solution_path = build_exam(exam, status_callback=update_status)
-            if exam_path and solution_path:
-                print(f"Exam built at: {exam_path}")
-                print(f"Solution built at: {solution_path}")
-            else:
-                print("LaTeX files generated successfully! (PDF compilation disabled)")
+            print(f"Exam built at: {exam_path}")
+            print(f"Solution built at: {solution_path}")
+
+            st.session_state['exam_path'] = exam_path
+            st.session_state['solution_path'] = solution_path
             
             # Final update: show completed step
             progress_placeholder.progress(1.0)
@@ -589,6 +509,33 @@ with left_col:
             st.session_state["uploaded_file"] = uploaded_file.name
             st.session_state["exam_built"] = True
 
+
+with right_col:
+    if 'exam_path' in st.session_state and 'solution_path' in st.session_state:
+        st.markdown("#### Exam Built Successfully!")
+        
+        # Read the exam file
+        with open(st.session_state['exam_path'], 'rb') as exam_file:
+            exam_bytes = exam_file.read()
+        
+        # Read the solution file
+        with open(st.session_state['solution_path'], 'rb') as solution_file:
+            solution_bytes = solution_file.read()
+        
+        # Create download buttons
+        st.download_button(
+            label="📄 Download Exam",
+            data=exam_bytes,
+            file_name="exam.pdf",
+            mime="application/pdf"
+        )
+        
+        st.download_button(
+            label="📝 Download Solution",
+            data=solution_bytes,
+            file_name="solution.pdf",
+            mime="application/pdf"
+        )
 
 # # Right column - Exam Details (will be populated when exam is built)
 # with right_col:
