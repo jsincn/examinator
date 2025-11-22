@@ -14,6 +14,22 @@ def strip_non_ascii(text):
     ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
     return ascii_text
 
+
+def strip_non_ascii(text: str) -> str:
+    """
+    Strip non-ASCII characters from a string, keeping only ASCII characters.
+    
+    Args:
+        text: Input string that may contain non-ASCII characters
+        
+    Returns:
+        String with only ASCII characters
+    """
+    if not text:
+        return text
+    return ''.join(char for char in text if ord(char) < 128)
+
+
 def render_mc_problem(exam_question: MultipleChoiceExamQuestion, problem_number: int, template_path: str = "templates/mc_problem_template.jinja2") -> str:
     """
     Render a MultipleChoiceExamQuestion to LaTeX using the Jinja template.
