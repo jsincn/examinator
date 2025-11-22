@@ -92,7 +92,7 @@ def generate_exam_question_with_openai(
         raise ValueError("OpenAI API returned no parsed content")
     return parsed
 
-
+@st.cache_data()
 def modify_mp_questions(exam_question: MultipleChoiceExamQuestion, use_script_context: bool = False):
     """Generate new multiple-choice exam questions based on existing ones."""
     return generate_exam_question_with_openai(exam_question, use_script_context=use_script_context)

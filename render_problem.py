@@ -1,6 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 from text_utils import strip_non_ascii
 from data_model import ExamQuestion
+import streamlit as st
 import os
 import unicodedata
 import subprocess
@@ -115,6 +116,7 @@ def fix_latex_filter(text):
                 return ""
     return text
             
+@st.cache_data()
 def render_problem(exam_question: ExamQuestion, problem_number: int, template_path: str = "templates/problem_template.jinja2") -> str | None:
     """
     Render an ExamQuestion to LaTeX using the Jinja template.
