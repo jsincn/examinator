@@ -1,26 +1,55 @@
 {
-  "total_points": 12,
-  "total_time_min": 30,
-  "exercises": [
-    {
-      "total_points": 12,
-      "sub_questions": [
-        {
-          "question_text_latex": "a) Consider two convolutional kernels applied to a two-dimensional input (e.g., a grayscale image). What are the effects of each kernel?\\n\\nKernel C1: $\\frac{1}{9} \\begin{bmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{bmatrix}$\\n\\nKernel C2: $\\begin{bmatrix} 1 & -1 \\\\ 1 & -1 \\end{bmatrix}$",
-          "question_answer_latex": "",
-          "available_points": 2
-        },
-        {
-          "question_text_latex": "b) A Convolution Layer has 5 filters, filter size of 7, stride of 3, padding of 1, and operates on an input feature map of size $26 \\times 26 \\times 26$. What is the output dimensionality?",
-          "question_answer_latex": "",
-          "available_points": 2
-        },
-        {
-          "question_text_latex": "c) A convolutional layer operates on an RGB image with 4 filters, kernel size 5, stride 1, and no padding.\\n\\n1) What is the shape of its weight tensor?\\n\\n2) Name all dimensions of your weight tensor.",
-          "question_answer_latex": "",
-          "available_points": 2
-        }
-      ]
-    }
-  ]
+  "total_points": 18,
+  "total_time_min": 45,
+  "exam_content": {
+    "problems": [
+      {
+        "total_points": 12,
+        "sub_questions": [
+          {
+            "question_text_latex": "a) Consider two convolutional kernels applied to a two-dimensional input (e.g., a grayscale image). What are the effects of each kernel?\\n\\nKernel C1: $\\frac{1}{9} \\begin{bmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{bmatrix}$\\n\\nKernel C2: $\\begin{bmatrix} 1 & -1 \\\\ 1 & -1 \\end{bmatrix}$",
+            "question_answer_latex": "",
+            "available_points": 2.0
+          },
+          {
+            "question_text_latex": "b) A Convolution Layer has 5 filters, filter size of 7, stride of 3, padding of 1, and operates on an input feature map of size $26 \\times 26 \\times 26$. What is the output dimensionality?",
+            "question_answer_latex": "",
+            "available_points": 2.0
+          },
+          {
+            "question_text_latex": "c) A convolutional layer operates on an RGB image with 4 filters, kernel size 5, stride 1, and no padding.\\n\\n1) What is the shape of its weight tensor?\\n\\n2) Name all dimensions of your weight tensor.",
+            "question_answer_latex": "",
+            "available_points": 2.0
+          }
+        ]
+      },
+      {
+        "total_points": 6,
+        "question_title": "Batch Normalization and Computation Graphs",
+        "sub_questions": [
+          {
+            "question_text_latex": "a) Why would one want to apply batch normalization in a neural network?",
+            "question_answer_latex": "",
+            "available_points": 1.0
+          },
+          {
+            "question_text_latex": "b) Why are $\\gamma$ and $\\beta$ needed in the batch normalization formula?\\n\\nFor an input vector $\\mathbf{x}$ as well as variables $\\gamma$ and $\\beta$ the general formula of batch normalization is given by:\\n\\n$\\hat{\\mathbf{x}} = \\frac{\\mathbf{x} - E[\\mathbf{x}]}{\\sqrt{\\text{Var}[\\mathbf{x}]}}$\\n\\n$\\mathbf{y} = \\gamma\\hat{\\mathbf{x}} + \\beta$",
+            "question_answer_latex": "",
+            "available_points": 1.0
+          },
+          {
+            "question_text_latex": "c) How is a batch normalization layer applied at training time and at test time?",
+            "question_answer_latex": "",
+            "available_points": 2.0
+          }
+        ]
+      }
+    ]
+  },
+  "exam_title": "Deep Learning Exam - Convolutional Neural Networks and Batch Normalization",
+  "examiner": "Prof. Dr. Example",
+  "module": "Deep Learning",
+  "start_time": "2025-01-15 10:00",
+  "end_time": "2025-01-15 10:45",
+  "exam_chair": "Chair of Computer Science"
 }
