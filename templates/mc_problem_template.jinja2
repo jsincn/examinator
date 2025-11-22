@@ -11,7 +11,7 @@
 {% endif %}
 \begin{multiplechoice}
 {% for option_idx, option in enumerate(sub_question.question_options) %}
-	\item{% if option_idx in sub_question.question_correct_option_indices %}*{% endif %} {{ option }}{% if option_idx in sub_question.question_correct_option_indices and sub_question.show_corrections|default(false) %} \correction{{'{'}}{{ sub_question.option_corrections[option_idx]|default('') }}{{'}'}}{% endif %}
+	\item{% if option_idx in sub_question.question_correct_option_indices %}*{% endif %} {{ option }}{% if option_idx in sub_question.question_correct_option_indices and sub_question.show_corrections|default(false) and sub_question.option_corrections and option_idx < (sub_question.option_corrections|length) and sub_question.option_corrections[option_idx] %} \correction{{'{'}}{{ sub_question.option_corrections[option_idx] }}{{'}'}}{% endif %}
 
 {% endfor %}
 \end{multiplechoice}

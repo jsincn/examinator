@@ -1,6 +1,16 @@
 import streamlit as st
-from data_model import Exam, ExamContent, ExamQuestion, SubQuestion, MultipleChoiceExamQuestion, MultipleChoiceSubQuestion
+from data_model import (
+    Exam,
+    ExamContent,
+    ExamQuestion,
+    SubQuestion,
+    MultipleChoiceExamQuestion,
+    MultipleChoiceSubQuestion,
+)
 from build_exam import build_exam
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_dummy_exam():
@@ -13,7 +23,7 @@ def get_dummy_exam():
         question_points=1,
         calculation_function="binary_mc",
         show_mc_notes=False,
-        show_corrections=True
+        show_corrections=True,
     )
 
     mc_sub_question_2 = MultipleChoiceSubQuestion(
@@ -23,31 +33,32 @@ def get_dummy_exam():
         question_points=2,
         calculation_function="mc",
         show_mc_notes=False,
-        show_corrections=True
+        show_corrections=True,
     )
 
     mc_question_1 = MultipleChoiceExamQuestion(
         total_points=1,
         sub_questions=[mc_sub_question_1, mc_sub_question_2],
-        question_title="Multiple Choice Questions"
+        question_title="Multiple Choice Questions",
+        question_description_latex=r"\begin{center}\mcnotes{}\end{center}",
     )
 
     sub_question_1 = SubQuestion(
         question_text_latex="What is the time complexity of binary search?",
         question_answer_latex="O(log n)",
-        available_points=2.0
+        available_points=2.0,
     )
 
     sub_question_2 = SubQuestion(
         question_text_latex="Explain the difference between a stack and a queue.",
         question_answer_latex="A stack follows LIFO (Last In First Out) principle, while a queue follows FIFO (First In First Out) principle.",
-        available_points=3.0
+        available_points=3.0,
     )
 
     sub_question_3 = SubQuestion(
         question_text_latex="What is the purpose of dynamic programming?",
         question_answer_latex="Dynamic programming is used to solve optimization problems by breaking them down into simpler subproblems and storing the results to avoid redundant computations.",
-        available_points=5.0
+        available_points=5.0,
     )
 
     # Create exam questions
@@ -75,9 +86,9 @@ def get_dummy_exam():
         module="CS101",
         start_time="2025-12-01 10:00",
         end_time="2025-12-01 11:30",
-        exam_chair="Chair of Computer Science"
+        exam_chair="Chair of Computer Science",
     )
-    
+
     return exam
 
 
@@ -91,47 +102,45 @@ left_col, right_col = st.columns([1, 2])
 with left_col:
     st.header("Upload File")
     uploaded_file = st.file_uploader("Choose a file", type=["pdf"])
-    
+
     if uploaded_file is not None:
         st.success(f"Uploaded: {uploaded_file.name}")
-        
+
         # Build the exam with dummy data only if not already built
-        if st.session_state.get('uploaded_file') != uploaded_file.name:
+        if st.session_state.get("uploaded_file") != uploaded_file.name:
             with st.spinner("Building exam PDF..."):
-                try:
-                    exam = get_dummy_exam()
-                    exam_path, solution_path = build_exam(exam)
-                    
-                    # Read the PDF file
-                    with open(exam_path, "rb") as pdf_file:
-                        pdf_bytes = pdf_file.read()
-                    
-                    with open(solution_path, "rb") as solution_file:
-                        solution_bytes = solution_file.read()
-                    
-                    # Store PDFs in session state
-                    st.session_state['exam_pdf'] = pdf_bytes
-                    st.session_state['solution_pdf'] = solution_bytes
-                    st.session_state['uploaded_file'] = uploaded_file.name
-                    
-                    st.success("Exam PDF generated successfully!")
-                
-                except Exception as e:
-                    st.error(f"Error building exam: {str(e)}")
-        
+
+                exam = get_dummy_exam()
+
+                exam_path, solution_path = build_exam(exam)
+
+                # Read the PDF file
+                with open(exam_path, "rb") as pdf_file:
+                    pdf_bytes = pdf_file.read()
+
+                with open(solution_path, "rb") as solution_file:
+                    solution_bytes = solution_file.read()
+
+                # Store PDFs in session state
+                st.session_state["exam_pdf"] = pdf_bytes
+                st.session_state["solution_pdf"] = solution_bytes
+                st.session_state["uploaded_file"] = uploaded_file.name
+
+                st.success("Exam PDF generated successfully!")
+
         # Display download buttons if PDFs are available in session state
-        if 'exam_pdf' in st.session_state and 'solution_pdf' in st.session_state:
+        if "exam_pdf" in st.session_state and "solution_pdf" in st.session_state:
             st.download_button(
                 label="Download Exam PDF",
-                data=st.session_state['exam_pdf'],
+                data=st.session_state["exam_pdf"],
                 file_name="exam.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
             )
             st.download_button(
                 label="Download Solution PDF",
-                data=st.session_state['solution_pdf'],
+                data=st.session_state["solution_pdf"],
                 file_name="solution.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
             )
 
 
