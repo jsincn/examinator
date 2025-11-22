@@ -570,8 +570,11 @@ with left_col:
                                        
 
             exam_path, solution_path = build_exam(exam, status_callback=update_status)
-            print(f"Exam built at: {exam_path}")
-            print(f"Solution built at: {solution_path}")
+            if exam_path and solution_path:
+                print(f"Exam built at: {exam_path}")
+                print(f"Solution built at: {solution_path}")
+            else:
+                print("LaTeX files generated successfully! (PDF compilation disabled)")
             
             # Final update: show completed step
             progress_placeholder.progress(1.0)
