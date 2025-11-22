@@ -8,21 +8,21 @@
         "sub_questions": [
           {
             "question_text_latex": "a) Consider two convolutional kernels applied to a two-dimensional input (e.g., a grayscale image). What are the effects of each kernel?\\n\\nKernel C1: $\\frac{1}{9} \\begin{bmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{bmatrix}$\\n\\nKernel C2: $\\begin{bmatrix} 1 & -1 \\\\ 1 & -1 \\end{bmatrix}$",
-            "question_answer_latex": "C1 - Smoothing/Averaging; C2 - Edge Detection/Sharpening",
+            "question_answer_latex": "C1 - Smoothing filter; C2 - Edge detection filter.",
             "available_points": 2.0,
             "starred": false,
             "box_height": "4cm"
           },
           {
             "question_text_latex": "b) A Convolution Layer has 5 filters, filter size of 7, stride of 3, padding of 1, and operates on an input feature map of size $26 \\times 26 \\times 26$. What is the output dimensionality?",
-            "question_answer_latex": "\\(8 \\times 8 \\times 5\\)",
+            "question_answer_latex": "\\( 8 \\times 8 \\times 5 \\)",
             "available_points": 2.0,
             "starred": false,
             "box_height": "4cm"
           },
           {
             "question_text_latex": "c) A convolutional layer operates on an RGB image with 4 filters, kernel size 5, stride 1, and no padding.\\n\\n1) What is the shape of its weight tensor?\\n\\n2) Name all dimensions of your weight tensor.",
-            "question_answer_latex": "(5, 5, 3, 4)",
+            "question_answer_latex": "Weight Tensor Shape: (5, 5, 3, 4), Dimensions: 5, 5, 3, 4",
             "available_points": 2.0,
             "starred": false,
             "box_height": "4cm"
@@ -36,21 +36,21 @@
         "sub_questions": [
           {
             "question_text_latex": "a) Why would one want to apply batch normalization in a neural network?",
-            "question_answer_latex": "Batch normalization improves training speed, stability, and reduces overfitting in neural networks.",
+            "question_answer_latex": "Batch normalization stabilizes training, accelerates convergence, and improves performance.",
             "available_points": 1.0,
             "starred": false,
             "box_height": "4cm"
           },
           {
             "question_text_latex": "b) Why are $\\gamma$ and $\\beta$ needed in the batch normalization formula?\\n\\nFor an input vector $\\mathbf{x}$ as well as variables $\\gamma$ and $\\beta$ the general formula of batch normalization is given by:\\n\\n$\\hat{\\mathbf{x}} = \\frac{\\mathbf{x} - E[\\mathbf{x}]}{\\sqrt{\\text{Var}[\\mathbf{x}]}}$\\n\\n$\\mathbf{y} = \\gamma\\hat{\\mathbf{x}} + \\beta$",
-            "question_answer_latex": "$\\gamma$ and $\\beta$ allow scaling and shifting of the normalized output for better model flexibility and performance.",
+            "question_answer_latex": "$\\gamma$ and $\\beta$ allow for learned scaling and shifting of the normalized output, enhancing model flexibility and performance.",
             "available_points": 1.0,
             "starred": false,
             "box_height": "4cm"
           },
           {
             "question_text_latex": "c) How is a batch normalization layer applied at training time and at test time?",
-            "question_answer_latex": "During training, batch normalization normalizes input data using batch statistics. During testing, it normalizes input data using stored moving averages of mean and variance.",
+            "question_answer_latex": "Batch normalization uses mini-batch statistics during training and running averages during testing.",
             "available_points": 2.0,
             "starred": false,
             "box_height": "4cm"
