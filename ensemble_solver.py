@@ -84,46 +84,87 @@ class Solver:
         
         raise last_exception or Exception("Unknown error in API call")
     
-    def solve(self, problem: str, is_latex: bool = False) -> Tuple[str, str]:
+    def solve(self, problem: str, is_latex: bool = False, available_points: Optional[float] = None) -> Tuple[str, str]:
         """
         Solve a math problem and return answer and explanation.
         
         Args:
             problem: The problem text (can be LaTeX formatted)
             is_latex: Whether the problem contains LaTeX formatting
+            available_points: Optional points value for the question (used for point distribution)
         
         Returns:
             Tuple of (answer, explanation)
         """
         latex_note = "\nNote: The problem may contain LaTeX formatting. Interpret it correctly." if is_latex else ""
         
-        prompt = f"""You are a math-specialist model. Solve the following problem.
+        points_note = ""
+        if available_points is not None:
+            points_note = f"\n\nThis question is worth {available_points} point(s) total. You MUST distribute exactly {available_points} point(s) across the key components of your answer. The sum of all point allocations must equal {available_points}."
+        
+        prompt = f"""You are a math-specialist model solving an exam question. Provide a comprehensive, detailed answer in the style of exam solution keys.
 
-Show only a short explanation. Final answer at the bottom in the format:
+Your answer should:
+1. Be thorough and detailed (not just a short answer)
+2. Explain the key concepts and reasoning clearly
+3. Include all important steps and explanations
+4. End with a point distribution using the format (Xp) for each component, where the total adds up to the available points
 
-Final Answer: <answer>
+Format your final answer as:
 
-If the answer should be in LaTeX format, provide it in LaTeX.{latex_note}
+Final Answer: <detailed answer text> (Xp for <component 1>, Yp for <component 2>, ...)
+
+IMPORTANT RULES:
+- Use the format (Xp) where X is the number of points (e.g., (1p), (0.5p), (2p))
+- The sum of all point allocations MUST equal the total available points for this question
+- Break down the answer into logical components that make sense for grading
+- Each component should be clearly identifiable in your answer text
+
+Example format (for a 2-point question):
+Final Answer: The output in deeper layers becomes close to zero, leading to very small gradients (vanishing gradient) during backpropagation. (1p for explanation, 1p for mentioning small gradients/vanishing gradient)
+
+Example format (for a 1-point question):
+Final Answer: Xavier initialization. (1p)
+
+If the answer should be in LaTeX format, provide it in LaTeX.{latex_note}{points_note}
 
 Problem:
 {problem}"""
         
         messages = [
-            {"role": "system", "content": "You are a math-specialist model. Provide clear, concise solutions."},
+            {"role": "system", "content": "You are a math-specialist model creating exam solution keys. Provide comprehensive, detailed answers in the style of official exam solutions, with clear explanations and point distributions."},
             {"role": "user", "content": prompt}
         ]
         
         try:
             full_response = self._call_api_with_retry(messages, temperature=0.3)
             
-            # Extract final answer
-            answer_match = re.search(r'Final Answer:\s*(.+)', full_response, re.IGNORECASE | re.DOTALL)
+            # Extract final answer - look for the pattern "Final Answer: ... (Xp for ...)"
+            # This regex captures everything after "Final Answer:" including the points distribution in parentheses
+            # Pattern: "Final Answer:" followed by text (may include parentheses with points like (1p), (0.5p)) until end or double newline
+            answer_match = re.search(r'Final Answer:\s*(.+?)(?:\n\n|\Z)', full_response, re.IGNORECASE | re.DOTALL)
             if answer_match:
                 answer = answer_match.group(1).strip()
+                # Ensure we capture the full answer including points distribution in parentheses
+                # Look for patterns like (1p), (0.5p), (2p for ...), etc.
+                # Try to find a complete answer ending with a point distribution
+                if re.search(r'\(\d+(?:\.\d+)?p', answer):
+                    # Answer contains point distribution, keep it as is
+                    pass
+                else:
+                    # Try to find the complete answer with points that might be on the next line
+                    extended_match = re.search(r'Final Answer:\s*(.+?\(.+?\d+(?:\.\d+)?p.*?\))', full_response, re.IGNORECASE | re.DOTALL)
+                    if extended_match:
+                        answer = extended_match.group(1).strip()
             else:
-                # Try to extract the last line as answer
-                lines = full_response.split('\n')
-                answer = lines[-1].strip() if lines else full_response
+                # Fallback: try to extract everything after "Final Answer:"
+                answer_match = re.search(r'Final Answer:\s*(.+)', full_response, re.IGNORECASE | re.DOTALL)
+                if answer_match:
+                    answer = answer_match.group(1).strip()
+                else:
+                    # Try to extract the last line as answer
+                    lines = full_response.split('\n')
+                    answer = lines[-1].strip() if lines else full_response
             
             return answer, full_response
             
@@ -423,7 +464,7 @@ class EnsembleCoordinator:
         
         return False
     
-    def solve(self, problem: str, verbose: bool = True, is_latex: Optional[bool] = None) -> Dict[str, Any]:
+    def solve(self, problem: str, verbose: bool = True, is_latex: Optional[bool] = None, available_points: Optional[float] = None) -> Dict[str, Any]:
         """
         Main solving method that coordinates solvers and arbiter.
         
@@ -431,6 +472,7 @@ class EnsembleCoordinator:
             problem: The math problem to solve
             verbose: Whether to print progress information
             is_latex: Whether problem contains LaTeX (auto-detected if None)
+            available_points: Optional points value for the question (used for point distribution in answers)
         
         Returns:
             Dict with final answer, agreement status, and iteration info
@@ -460,7 +502,7 @@ class EnsembleCoordinator:
             def solve_with_solver(solver):
                 """Helper function to solve with a solver and return result."""
                 try:
-                    answer, explanation = solver.solve(current_problem, is_latex=is_latex)
+                    answer, explanation = solver.solve(current_problem, is_latex=is_latex, available_points=available_points)
                     return {
                         'solver': solver.name,
                         'answer': answer,
@@ -851,9 +893,10 @@ class ExamProcessor:
                 print(f"{'#'*60}")
             
             question_text = question_info['question_text_latex']
+            available_points = question_info.get('available_points')
             
             # Solve using ensemble (UEF questions are in LaTeX format)
-            result = self.coordinator.solve(question_text, verbose=verbose, is_latex=True)
+            result = self.coordinator.solve(question_text, verbose=verbose, is_latex=True, available_points=available_points)
             
             # Store answer in exam model
             prob_idx = question_info['problem_index']

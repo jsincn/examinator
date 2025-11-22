@@ -166,7 +166,7 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
             for sub_question in new_problem.sub_questions:
                 if isinstance(sub_question, SubQuestion):
                     print("Solving sub-question")
-                    solution = solver.solve(q_description + "\n" + sub_question.question_text_latex)
+                    solution = solver.solve(q_description + "\n" + sub_question.question_text_latex, available_points=sub_question.available_points)
                     sub_question.question_answer_latex = solution['final_answer']
             problem_latex = render_problem(new_problem, problem_number=idx)
         
@@ -195,148 +195,148 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
     # Uncomment this section if you have LaTeX installed and want to generate PDFs.
     # ============================================================================
     
-    # Build the exam PDF - cross-platform solution
-    # Priority: Use Makefile if available (macOS/Linux), fallback to pdflatex (Windows)
-    original_dir = os.getcwd()
-    os.chdir(base_dir)
-    
-    # Check if make is available (Unix/Linux/Mac - typically available by default)
-    make_available = shutil.which('make') is not None
-    
-    if make_available:
-        # Use Makefile if available (preferred method for macOS/Linux)
-        # This preserves the original behavior for Unix-based systems
-        result = os.system('make')
-        result_2 = os.system('make solution')
-        if result != 0:
-            raise RuntimeError(f"make failed with exit code {result}")
-        if result_2 != 0:
-            raise RuntimeError(f"make solution failed with exit code {result_2}")
-    else:
-        # Windows fallback: use pdflatex directly (make is typically not available on Windows)
-        # Check if pdflatex is available in PATH
-        pdflatex = shutil.which('pdflatex')
-        
-        # If not in PATH, check common Windows installation locations
-        if not pdflatex:
-            common_paths = [
-                r"C:\Program Files\MiKTeX\miktex\bin\x64\pdflatex.exe",
-                r"C:\Program Files (x86)\MiKTeX\miktex\bin\pdflatex.exe",
-                os.path.expanduser(r"~\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"),
-                r"C:\texlive\2024\bin\win32\pdflatex.exe",
-                r"C:\texlive\2023\bin\win32\pdflatex.exe",
-            ]
-            for path in common_paths:
-                if os.path.exists(path):
-                    pdflatex = path
-                    break
-        
-        if not pdflatex:
-            error_msg = (
-                "Neither 'make' nor 'pdflatex' found.\n\n"
-                "To fix this on Windows, please install a LaTeX distribution:\n"
-                "1. MiKTeX (Recommended): https://miktex.org/download\n"
-                "   - Download and run the installer\n"
-                "   - Make sure to select 'Add MiKTeX to PATH' during installation\n"
-                "   - Or add MiKTeX bin folder to your system PATH manually\n\n"
-                "2. TeX Live: https://www.tug.org/texlive/windows.html\n"
-                "   - Download and run install-tl-windows.exe\n"
-                "   - Add TeX Live bin folder to your system PATH\n\n"
-                "After installation, restart your terminal/IDE and try again."
-            )
-            raise RuntimeError(error_msg)
-        
-        exam_tex = os.path.join(base_dir, 'exam.tex')
-        exam_tex_basename = os.path.splitext(os.path.basename(exam_tex))[0]
-        
-        def run_pdflatex(tex_file, jobname=None, description="PDF"):
-            """Run pdflatex with error handling for MiKTeX update checks."""
-            cmd = [pdflatex, '-interaction=nonstopmode', '-output-directory=.', tex_file]
-            if jobname:
-                cmd.insert(-1, f'-jobname={jobname}')
-            
-            result = subprocess.run(
-                cmd,
-                capture_output=True, text=True, cwd=base_dir
-            )
-            
-            # Check for MiKTeX update requirement
-            if result.returncode != 0:
-                error_output = (result.stderr or result.stdout or "").lower()
-                if "you have not checked for miktex updates" in error_output:
-                    # Try to automatically run the update check
-                    try:
-                        # Try to find mpm (MiKTeX Package Manager)
-                        mpm_paths = [
-                            shutil.which('mpm'),
-                            os.path.join(os.path.dirname(pdflatex), 'mpm.exe'),
-                            os.path.join(os.path.dirname(pdflatex), '..', 'miktex', 'bin', 'x64', 'mpm.exe'),
-                        ]
-                        mpm = None
-                        for path in mpm_paths:
-                            if path and os.path.exists(path):
-                                mpm = path
-                                break
-                        
-                        if mpm:
-                            # Run update check (this may take a while, but it's necessary)
-                            print("MiKTeX update check required. Running automatically...")
-                            update_result = subprocess.run(
-                                [mpm, '--update', '--auto-install'],
-                                capture_output=True, text=True, timeout=120
-                            )
-                            # Try pdflatex again after update check
-                            result = subprocess.run(
-                                cmd,
-                                capture_output=True, text=True, cwd=base_dir
-                            )
-                            if result.returncode == 0:
-                                return result
-                    except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
-                        # If automatic update fails, provide instructions
-                        pass
-                    
-                    # If automatic update didn't work, provide clear instructions
-                    error_msg = (
-                        f"pdflatex failed: MiKTeX requires an update check on first use.\n\n"
-                        "To fix this, run ONE of the following:\n\n"
-                        "Option 1 (Recommended - GUI):\n"
-                        "  Open 'MiKTeX Console' from Start Menu, then:\n"
-                        "  - Click 'Check for updates'\n"
-                        "  - Click 'Update now' if updates are found\n\n"
-                        "Option 2 (Command Line):\n"
-                        "  Open PowerShell (as Administrator) and run:\n"
-                        "  mpm --update --auto-install\n\n"
-                        "After running the update check once, this error will not appear again."
-                    )
-                    raise RuntimeError(error_msg)
-                
-                # Other errors
-                error_msg = f"pdflatex failed for {description}:\n{result.stderr or result.stdout}"
-                raise RuntimeError(error_msg)
-            
-            return result
-        
-        # Build exam.pdf (run twice for proper references)
-        for _ in range(2):
-            run_pdflatex(exam_tex, description="exam.pdf")
-        
-        # Build exam-solution.pdf using jobname "solution" (this triggers solution mode in tumexam.cls)
-        # The Makefile uses jobname "solution" which the LaTeX class checks
-        for _ in range(2):
-            run_pdflatex(exam_tex, jobname='exam-solution', description="exam-solution.pdf")
-    
-    os.chdir(original_dir)
-    
-    # Find the generated PDF
-    pdf_path = os.path.join(base_dir, 'exam.pdf')
-    solution_pdf_path = os.path.join(base_dir, 'exam-solution.pdf')
-    if not os.path.exists(pdf_path):
-        raise FileNotFoundError(f"PDF not found at {pdf_path}")
-    if not os.path.exists(solution_pdf_path):
-        raise FileNotFoundError(f"Solution PDF not found at {solution_pdf_path}")
-        
-    return pdf_path, solution_pdf_path
+    # # Build the exam PDF - cross-platform solution
+    # # Priority: Use Makefile if available (macOS/Linux), fallback to pdflatex (Windows)
+    # original_dir = os.getcwd()
+    # os.chdir(base_dir)
+    # 
+    # # Check if make is available (Unix/Linux/Mac - typically available by default)
+    # make_available = shutil.which('make') is not None
+    # 
+    # if make_available:
+    #     # Use Makefile if available (preferred method for macOS/Linux)
+    #     # This preserves the original behavior for Unix-based systems
+    #     result = os.system('make')
+    #     result_2 = os.system('make solution')
+    #     if result != 0:
+    #         raise RuntimeError(f"make failed with exit code {result}")
+    #     if result_2 != 0:
+    #         raise RuntimeError(f"make solution failed with exit code {result_2}")
+    # else:
+    #     # Windows fallback: use pdflatex directly (make is typically not available on Windows)
+    #     # Check if pdflatex is available in PATH
+    #     pdflatex = shutil.which('pdflatex')
+    #     
+    #     # If not in PATH, check common Windows installation locations
+    #     if not pdflatex:
+    #         common_paths = [
+    #             r"C:\Program Files\MiKTeX\miktex\bin\x64\pdflatex.exe",
+    #             r"C:\Program Files (x86)\MiKTeX\miktex\bin\pdflatex.exe",
+    #             os.path.expanduser(r"~\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"),
+    #             r"C:\texlive\2024\bin\win32\pdflatex.exe",
+    #             r"C:\texlive\2023\bin\win32\pdflatex.exe",
+    #         ]
+    #         for path in common_paths:
+    #             if os.path.exists(path):
+    #                 pdflatex = path
+    #                 break
+    #     
+    #     if not pdflatex:
+    #         error_msg = (
+    #             "Neither 'make' nor 'pdflatex' found.\n\n"
+    #             "To fix this on Windows, please install a LaTeX distribution:\n"
+    #             "1. MiKTeX (Recommended): https://miktex.org/download\n"
+    #             "   - Download and run the installer\n"
+    #             "   - Make sure to select 'Add MiKTeX to PATH' during installation\n"
+    #             "   - Or add MiKTeX bin folder to your system PATH manually\n\n"
+    #             "2. TeX Live: https://www.tug.org/texlive/windows.html\n"
+    #             "   - Download and run install-tl-windows.exe\n"
+    #             "   - Add TeX Live bin folder to your system PATH\n\n"
+    #             "After installation, restart your terminal/IDE and try again."
+    #         )
+    #         raise RuntimeError(error_msg)
+    #     
+    #     exam_tex = os.path.join(base_dir, 'exam.tex')
+    #     exam_tex_basename = os.path.splitext(os.path.basename(exam_tex))[0]
+    #     
+    #     def run_pdflatex(tex_file, jobname=None, description="PDF"):
+    #         """Run pdflatex with error handling for MiKTeX update checks."""
+    #         cmd = [pdflatex, '-interaction=nonstopmode', '-output-directory=.', tex_file]
+    #         if jobname:
+    #             cmd.insert(-1, f'-jobname={jobname}')
+    #         
+    #         result = subprocess.run(
+    #             cmd,
+    #             capture_output=True, text=True, cwd=base_dir
+    #         )
+    #         
+    #         # Check for MiKTeX update requirement
+    #         if result.returncode != 0:
+    #             error_output = (result.stderr or result.stdout or "").lower()
+    #             if "you have not checked for miktex updates" in error_output:
+    #                 # Try to automatically run the update check
+    #                 try:
+    #                     # Try to find mpm (MiKTeX Package Manager)
+    #                     mpm_paths = [
+    #                         shutil.which('mpm'),
+    #                         os.path.join(os.path.dirname(pdflatex), 'mpm.exe'),
+    #                         os.path.join(os.path.dirname(pdflatex), '..', 'miktex', 'bin', 'x64', 'mpm.exe'),
+    #                     ]
+    #                     mpm = None
+    #                     for path in mpm_paths:
+    #                         if path and os.path.exists(path):
+    #                             mpm = path
+    #                             break
+    #                     
+    #                     if mpm:
+    #                         # Run update check (this may take a while, but it's necessary)
+    #                         print("MiKTeX update check required. Running automatically...")
+    #                         update_result = subprocess.run(
+    #                             [mpm, '--update', '--auto-install'],
+    #                             capture_output=True, text=True, timeout=120
+    #                         )
+    #                         # Try pdflatex again after update check
+    #                         result = subprocess.run(
+    #                             cmd,
+    #                             capture_output=True, text=True, cwd=base_dir
+    #                         )
+    #                         if result.returncode == 0:
+    #                             return result
+    #                 except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+    #                     # If automatic update fails, provide instructions
+    #                     pass
+    #                 
+    #                 # If automatic update didn't work, provide clear instructions
+    #                 error_msg = (
+    #                     f"pdflatex failed: MiKTeX requires an update check on first use.\n\n"
+    #                     "To fix this, run ONE of the following:\n\n"
+    #                     "Option 1 (Recommended - GUI):\n"
+    #                     "  Open 'MiKTeX Console' from Start Menu, then:\n"
+    #                     "  - Click 'Check for updates'\n"
+    #                     "  - Click 'Update now' if updates are found\n\n"
+    #                     "Option 2 (Command Line):\n"
+    #                     "  Open PowerShell (as Administrator) and run:\n"
+    #                     "  mpm --update --auto-install\n\n"
+    #                     "After running the update check once, this error will not appear again."
+    #                 )
+    #                 raise RuntimeError(error_msg)
+    #             
+    #             # Other errors
+    #             error_msg = f"pdflatex failed for {description}:\n{result.stderr or result.stdout}"
+    #             raise RuntimeError(error_msg)
+    #         
+    #         return result
+    #     
+    #     # Build exam.pdf (run twice for proper references)
+    #     for _ in range(2):
+    #         run_pdflatex(exam_tex, description="exam.pdf")
+    #     
+    #     # Build exam-solution.pdf using jobname "solution" (this triggers solution mode in tumexam.cls)
+    #     # The Makefile uses jobname "solution" which the LaTeX class checks
+    #     for _ in range(2):
+    #         run_pdflatex(exam_tex, jobname='exam-solution', description="exam-solution.pdf")
+    # 
+    # os.chdir(original_dir)
+    # 
+    # # Find the generated PDF
+    # pdf_path = os.path.join(base_dir, 'exam.pdf')
+    # solution_pdf_path = os.path.join(base_dir, 'exam-solution.pdf')
+    # if not os.path.exists(pdf_path):
+    #     raise FileNotFoundError(f"PDF not found at {pdf_path}")
+    # if not os.path.exists(solution_pdf_path):
+    #     raise FileNotFoundError(f"Solution PDF not found at {solution_pdf_path}")
+    #     
+    # return pdf_path, solution_pdf_path
     
     # ============================================================================
     # END OF COMMENTED LaTeX COMPILATION CODE
@@ -344,4 +344,4 @@ def build_exam(exam: Exam, status_callback=None) -> tuple[str, str]:
     
     # Return None for PDF paths since compilation is disabled
     # The LaTeX files are still generated and available in base_dir
-    # return None, None
+    return None, None
