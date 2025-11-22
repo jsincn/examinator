@@ -30,8 +30,8 @@ class MultipleChoiceExamQuestion(BaseModel):
     total_points: int
     sub_questions: List[MultipleChoiceSubQuestion]
     question_title: Optional[str] = None
-    show_instructions: bool = True  # Show instructions for MC questions
-
+    question_description_latex: Optional[str] = r"\begin{center}\mcnotes{}\end{center}"
+    
 class ExamContent(BaseModel):
     problems: List[ExamQuestion | MultipleChoiceExamQuestion]
 
