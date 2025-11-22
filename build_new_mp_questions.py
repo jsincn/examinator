@@ -66,7 +66,7 @@ def generate_exam_question_with_openai(
     response = client.beta.chat.completions.parse(
         model="gpt-5",
         messages=messages,
-        temperature=temperature,
+        # temperature=temperature,
         response_format=MultipleChoiceExamQuestion,
     )
 
