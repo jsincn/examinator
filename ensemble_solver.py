@@ -17,7 +17,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import ValidationError
-
+import streamlit as st
 # Import UEF data models
 from data_model import Exam, ExamQuestion, SubQuestion, ExamContent, MultipleChoiceExamQuestion
 
@@ -27,6 +27,12 @@ load_dotenv()
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+@st.cache_data()
+def solve_helper(q_description, sub_question: SubQuestion):
+    solver = EnsembleCoordinator()
+    return solver.solve(q_description + "\n" + sub_question.question_text_latex, available_points=sub_question.available_points)
+
 
 class Solver:
     """Independent Solver LLM that attempts to solve math problems."""

@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import streamlit as st
 from typing import Iterable, Optional
 
 from openai import OpenAI
@@ -86,7 +87,7 @@ Respond ONLY with JSON: {{"question_text_latex": "...", "question_answer_latex":
     ]
 
     response = client.beta.chat.completions.parse(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=messages,
         temperature=temperature,
         response_format=SubQuestion,  # Hilfsmodell
@@ -102,11 +103,11 @@ Respond ONLY with JSON: {{"question_text_latex": "...", "question_answer_latex":
     }
     return _copy_model(sub_question, update=update_payload)
 
-
+@st.cache_data()
 def rewrite_exam_question(
     exam_question: ExamQuestion,
     *,
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-4o",
     temperature: float = 0.7,
     variation: int = 5,
     client: Optional[OpenAI] = None,
