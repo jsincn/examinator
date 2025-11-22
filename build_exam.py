@@ -98,7 +98,7 @@ def build_exam(exam: Exam):
     os.makedirs(problems_dir, exist_ok=True)
 
     problem_filenames = []
-    for idx, problem in enumerate(exam.problems, start=1):
+    for idx, problem in enumerate(exam.exam_content.problems, start=1):
         problem_filename = f"problem_{idx:02d}.tex"
         problem_path = os.path.join(problems_dir, problem_filename)
         problem_filenames.append(problem_filename)
@@ -122,13 +122,19 @@ def build_exam(exam: Exam):
     original_dir = os.getcwd()
     os.chdir(base_dir)
     result = os.system('make')
+    result_2 = os.system('make solution')
     os.chdir(original_dir)
     if result != 0:
         raise RuntimeError(f"make failed with exit code {result}")
+    if result_2 != 0:
+        raise RuntimeError(f"make solution failed with exit code {result_2}")
 
     # Find the generated PDF
     pdf_path = os.path.join(base_dir, 'exam.pdf')
+    solution_pdf_path = os.path.join(base_dir, 'exam-solution.pdf')
     if not os.path.exists(pdf_path):
         raise FileNotFoundError(f"PDF not found at {pdf_path}")
+    if not os.path.exists(solution_pdf_path):
+        raise FileNotFoundError(f"Solution PDF not found at {solution_pdf_path}")
         
-    return pdf_path
+    return pdf_path, solution_pdf_path

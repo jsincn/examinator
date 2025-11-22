@@ -28,7 +28,8 @@ def get_dummy_exam():
 
     mc_question_1 = MultipleChoiceExamQuestion(
         total_points=1,
-        sub_questions=[mc_sub_question_1, mc_sub_question_2]
+        sub_questions=[mc_sub_question_1, mc_sub_question_2],
+        question_title="Multiple Choice Questions"
     )
 
     sub_question_1 = SubQuestion(
@@ -52,12 +53,16 @@ def get_dummy_exam():
     # Create exam questions
     question_1 = ExamQuestion(
         total_points=5,
-        sub_questions=[sub_question_1, sub_question_2]
+        sub_questions=[sub_question_1, sub_question_2],
+        question_title="Short Answer Questions",
+        question_description_latex=r"""\begin{center}Please answer the following questions concisely.\end{center}""",
     )
 
     question_2 = ExamQuestion(
         total_points=5,
-        sub_questions=[sub_question_3]
+        sub_questions=[sub_question_3],
+        question_title="Dynamic Programming Question",
+        question_description_latex=r"""\begin{center}Answer the following question in detail.\end{center}""",
     )
 
     # Create the exam
@@ -90,28 +95,44 @@ with left_col:
     if uploaded_file is not None:
         st.success(f"Uploaded: {uploaded_file.name}")
         
-        # Build the exam with dummy data
-        with st.spinner("Building exam PDF..."):
-            try:
-                exam = get_dummy_exam()
-                pdf_path = build_exam(exam)
+        # Build the exam with dummy data only if not already built
+        if st.session_state.get('uploaded_file') != uploaded_file.name:
+            with st.spinner("Building exam PDF..."):
+                try:
+                    exam = get_dummy_exam()
+                    exam_path, solution_path = build_exam(exam)
+                    
+                    # Read the PDF file
+                    with open(exam_path, "rb") as pdf_file:
+                        pdf_bytes = pdf_file.read()
+                    
+                    with open(solution_path, "rb") as solution_file:
+                        solution_bytes = solution_file.read()
+                    
+                    # Store PDFs in session state
+                    st.session_state['exam_pdf'] = pdf_bytes
+                    st.session_state['solution_pdf'] = solution_bytes
+                    st.session_state['uploaded_file'] = uploaded_file.name
+                    
+                    st.success("Exam PDF generated successfully!")
                 
-                # Read the PDF file
-                with open(pdf_path, "rb") as pdf_file:
-                    pdf_bytes = pdf_file.read()
-                
-                st.success("Exam PDF generated successfully!")
-                
-                # Provide download button
-                st.download_button(
-                    label="Download Exam PDF",
-                    data=pdf_bytes,
-                    file_name="exam.pdf",
-                    mime="application/pdf"
-                )
-                
-            except Exception as e:
-                st.error(f"Error building exam: {str(e)}")
+                except Exception as e:
+                    st.error(f"Error building exam: {str(e)}")
+        
+        # Display download buttons if PDFs are available in session state
+        if 'exam_pdf' in st.session_state and 'solution_pdf' in st.session_state:
+            st.download_button(
+                label="Download Exam PDF",
+                data=st.session_state['exam_pdf'],
+                file_name="exam.pdf",
+                mime="application/pdf"
+            )
+            st.download_button(
+                label="Download Solution PDF",
+                data=st.session_state['solution_pdf'],
+                file_name="solution.pdf",
+                mime="application/pdf"
+            )
 
 
 st.write(ExamContent.model_json_schema())
