@@ -13,7 +13,7 @@ class MultipleChoiceSubQuestion(BaseModel):
     question_options: List[str]
     question_correct_option_indices: List[int]  # Support multiple correct answers
     question_points: float
-    calculation_function: str = "binary_mc"  # mc, strict_mc, binary_mc, ternary_mc, per_option_mc
+    calculation_function: str = "binary_mc"
     show_mc_notes: bool = False  # Show instructions on how to mark answers
     show_corrections: bool = False  # Show correction text for wrong answers
     option_corrections: Optional[dict] = None  # Mapping of option index to correction text
@@ -22,16 +22,23 @@ class ExamQuestion(BaseModel):
 
     total_points: int
     sub_questions: List[SubQuestion]
+    question_title: Optional[str] = None
+    question_description_latex: Optional[str] = None
+
 
 class MultipleChoiceExamQuestion(BaseModel):
     total_points: int
     sub_questions: List[MultipleChoiceSubQuestion]
+    question_title: Optional[str] = None
+    show_instructions: bool = True  # Show instructions for MC questions
+
+class ExamContent(BaseModel):
+    problems: List[ExamQuestion | MultipleChoiceExamQuestion]
 
 class Exam(BaseModel):
-
     total_points: int
     total_time_min: int
-    problems: List[ExamQuestion | MultipleChoiceExamQuestion]
+    exam_content: ExamContent
     exam_title: str
     examiner: str
     module: str

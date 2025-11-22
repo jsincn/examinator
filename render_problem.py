@@ -24,6 +24,8 @@ def render_problem(exam_question: ExamQuestion, problem_number: int, template_pa
     # Prepare template context
     context = {
         'problem_number': problem_number,
+        'question_title': exam_question.question_title,
+        'question_description_latex': exam_question.question_description_latex,
         'sub_questions': enumerate(exam_question.sub_questions, start=1),
     }
     

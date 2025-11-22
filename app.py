@@ -1,5 +1,5 @@
 import streamlit as st
-from data_model import Exam, ExamQuestion, SubQuestion, MultipleChoiceExamQuestion, MultipleChoiceSubQuestion
+from data_model import Exam, ExamContent, ExamQuestion, SubQuestion, MultipleChoiceExamQuestion, MultipleChoiceSubQuestion
 from build_exam import build_exam
 
 
@@ -64,7 +64,7 @@ def get_dummy_exam():
     exam = Exam(
         total_points=10,
         total_time_min=90,
-        problems=[mc_question_1, question_1, question_2],
+        exam_content=ExamContent(problems=[mc_question_1, question_1, question_2]),
         exam_title="Introduction to Algorithms - Midterm Exam",
         examiner="Prof. Dr. John Smith",
         module="CS101",
@@ -114,4 +114,4 @@ with left_col:
                 st.error(f"Error building exam: {str(e)}")
 
 
-st.write(Exam.model_json_schema())
+st.write(ExamContent.model_json_schema())
