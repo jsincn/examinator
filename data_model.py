@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import List, Optional, Union
+from pydantic import BaseModel, Field
 
 class SubQuestion(BaseModel):
     question_text_latex: str
@@ -16,7 +16,7 @@ class MultipleChoiceSubQuestion(BaseModel):
     calculation_function: str = "binary_mc"
     show_mc_notes: bool = False  # Show instructions on how to mark answers
     show_corrections: bool = False  # Show correction text for wrong answers
-    option_corrections: Optional[dict] = None  # Mapping of option index to correction text
+    option_corrections: List[str] = Field(default_factory=list)  # List of corrections, one per option (empty string if no correction)
 
 class ExamQuestion(BaseModel):
 
@@ -29,8 +29,8 @@ class ExamQuestion(BaseModel):
 class MultipleChoiceExamQuestion(BaseModel):
     total_points: int
     sub_questions: List[MultipleChoiceSubQuestion]
-    question_title: Optional[str] = None
-    question_description_latex: Optional[str] = r"\begin{center}\mcnotes{}\end{center}"
+    question_title: str = ""
+    question_description_latex: str = ""
     
 class ExamContent(BaseModel):
     problems: List[ExamQuestion | MultipleChoiceExamQuestion]

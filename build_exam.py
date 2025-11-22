@@ -1,6 +1,7 @@
 
 
 
+from build_new_mp_questions import modify_mp_questions
 from data_model import Exam, MultipleChoiceExamQuestion
 from render_mc_problem import render_mc_problem
 from render_problem import render_problem
@@ -105,7 +106,8 @@ def build_exam(exam: Exam):
         
         # Render the problem using the Jinja template
         if isinstance(problem, MultipleChoiceExamQuestion):
-            problem_latex = render_mc_problem(problem, problem_number=idx)
+            new_problem = modify_mp_questions(problem)
+            problem_latex = render_mc_problem(new_problem, problem_number=idx)
         else:
             problem_latex = render_problem(problem, problem_number=idx)
         
