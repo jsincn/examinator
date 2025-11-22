@@ -1,0 +1,329 @@
+{
+  "total_points": 90,
+  "total_time_min": 90,
+  "exercises": [
+    {
+      "title": "Problem 1 Multiple Choice Questions",
+      "total_points": 18,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Which of the following statements regarding successful ImageNet-classification architectures are correct?} \\begin{itemize} \\item \\text{ResNet18 has 11 million parameters more than VGG16.} \\item \\text{AlexNet uses filters of different kernel sizes.} \\item \\text{InceptionV3 uses filters of different kernel sizes.} \\item \\text{VGG16 only uses convolutional layers.} \\end{itemize}",
+          "question_answer_latex": "\\begin{itemize} \\item \\text{AlexNet uses filters of different kernel sizes.} \\item \\text{InceptionV3 uses filters of different kernel sizes.} \\end{itemize}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{b) You train a neural network and the train loss diverges. What are reasonable things to do? (check all that apply)} \\begin{itemize} \\item \\text{Decrease the learning rate.} \\item \\text{Add dropout.} \\item \\text{Increase the learning rate.} \\item \\text{Try a different optimizer.} \\end{itemize}",
+          "question_answer_latex": "\\begin{itemize} \\item \\text{Decrease the learning rate.} \\item \\text{Try a different optimizer.} \\end{itemize}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{c) What is the correct order of operations for an optimization with gradient descent?} \\begin{enumerate} \\item \\text{Update the network weights to minimize the loss.} \\item \\text{Calculate the difference between the predicted and target value.} \\item \\text{Iteratively repeat the procedure until convergence.} \\item \\text{Compute a forward pass.} \\item \\text{Initialize the neural network weights.} \\end{enumerate} \\begin{itemize} \\item \\text{bcdea} \\item \\text{ebadc} \\item \\text{eadbc} \\item \\text{edbac} \\end{itemize}",
+          "question_answer_latex": "\\text{edbac}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) Consider a simple convolutional neural network with a single convolutional layer. Which of the following}\\text{ statements is true about this network?} \\begin{itemize} \\item \\text{It is rotation invariant.} \\item \\text{It is translation equivariant.} \\item \\text{All input nodes are connected to all output nodes.} \\item \\text{It is scale-invariant.} \\end{itemize}",
+          "question_answer_latex": "\\text{It is translation equivariant.}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{e) Which of the following activation functions can lead to vanishing gradients?} \\begin{itemize} \\item \\text{Tanh.} \\item \\text{ReLU.} \\item \\text{Sigmoid.} \\item \\text{Leaky Relu.} \\end{itemize}",
+          "question_answer_latex": "\\begin{itemize} \\item \\text{Tanh.} \\item \\text{Sigmoid.} \\end{itemize}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{f) Logistic regression (check all that apply).} \\begin{itemize} \\item \\text{Is a linear function.} \\item \\text{Is a supervised learning algorithm.} \\item \\text{Uses a type of cross-entropy loss.} \\item \\text{Allows to perform binary classification.} \\end{itemize}",
+          "question_answer_latex": "\\begin{itemize} \\item \\text{Is a supervised learning algorithm.} \\item \\text{Uses a type of cross-entropy loss.} \\item \\text{Allows to perform binary classification.} \\end{itemize}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{g) A sigmoid layer} \\begin{itemize} \\item \\text{cannot be used during backpropagation.} \\item \\text{has a learnable parameter.} \\item \\text{maps surjectively to values in (-1, 1), i.e., hits all values in that interval.} \\item \\text{is continuous and differentiable everywhere.} \\end{itemize}",
+          "question_answer_latex": "\\text{is continuous and differentiable everywhere.}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{h) Your training loss does not decrease. What could be wrong?} \\begin{itemize} \\item \\text{Learning rate is too high.} \\item \\text{Too much regularization.} \\item \\text{Dropout probability not high enough.} \\item \\text{Bad initialization.} \\end{itemize}",
+          "question_answer_latex": "\\begin{itemize} \\item \\text{Learning rate is too high.} \\item \\text{Too much regularization.} \\item \\text{Bad initialization.} \\end{itemize}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{i) Which of the following have trainable parameters? (check all that apply)} \\begin{itemize} \\item \\text{Leaky ReLU} \\item \\text{Batch normalization} \\item \\text{Dropout} \\item \\text{Max pooling} \\end{itemize}",
+          "question_answer_latex": "\\text{Batch normalization}",
+          "available_points": 2.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 2 Activation Functions and Weight Initialization",
+      "total_points": 8,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Compute a forward pass for each set of weights and draw the results of the linear layer in the Figure of the tanh plot.}\\text{ You don't need to compute the tanh.}",
+          "question_answer_latex": "\\begin{align*} \\text{Var(}w\\text{) = 0.02: }s &= (2 * 0.05) + (−4 * 0.025) + (1 * (−0.03)) = −0.03 \\\\ \\text{Var(}w\\text{) = 1.0: }s &= (2 * 1.0) + (−4 * 0.5) + (1 * 1.5)) = 1.5 \\\\ \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{b) Using the results above, explain what problems can arise during backpropagation of deep neural networks when}\\text{initializing the weights with too small and too large variance. Also, explain the root of these problems.}",
+          "question_answer_latex": "\\begin{align*} &\\text{Too small variance: The output in deeper layers is close to zero. Therefore, the gradient w.r.t the} \\\\ &\\text{weights also becomes very small (vanishing gradient).} \\\\ &\\text{Too large variance: The tanh activation function saturates. Therefore, the gradient w.r.t the weights} \\\\ &\\text{becomes very small (vanishing gradient).} \\\\ \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{c) Which initialization scheme did you learn in the lecture that tackles these problems? What does this initialization try} \\text{ to achieve in the activations of deep layers of the neural network?}",
+          "question_answer_latex": "\\begin{align*} &\\text{Xavier initialization} \\\\ &\\text{The goal is to keep the variance of the output is the same as the input.} \\\\ \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) After switching from tanh to ReLU activation functions, one of your initial problems occurs again. Why does this}\\text{happen? How can you modify the initialization scheme proposed in c) to adjust it for this new non-linearity?}",
+          "question_answer_latex": "\\text{ReLU \"kills\" half of the outputs. Therefore, the output variance of a layer is halved. Multiply Xavier} \\\\ \\text{initialization with }\\frac{1}{2}\\text{/He initialization}",
+          "available_points": 2.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 3 Batch Normalization and Computation Graphs",
+      "total_points": 6,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Why would one want to apply batch normalization in a neural network?}",
+          "question_answer_latex": "\\text{To reduce Internal (not plain covariate shift) covariate shift - i.e. to normalize input features for each layer to get }\\\\ \\text{stable gradients during training.}",
+          "available_points": 1.5
+        },
+        {
+          "question_text_latex": "\\text{b) Why are } \\gamma \\text{ and } \\beta \\text{ needed in the batch normalization formula?}",
+          "question_answer_latex": "\\text{Allows the network to \"undo\" or scale/shift the distribution after the normalization.}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{c) How is a batch normalization layer applied at training (1p) and at test (1p) time?}",
+          "question_answer_latex": "\\begin{align*}&\\text{Train time: Calculate the mean and variance for each feature across the mini batch and accumulate a moving} \\\\ &\\text{weighted average across training mini-batches for the update at test time.} \\\\ &\\text{Test time: Use exponentially weighted / moving / running average mean and variance that was} \\\\ &\\text{computed at training time on the test samples.} \\\\ \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) Computational graph of a batch normalization layer. Fill out the nodes (circles) of the following computational graph.}\\text{ Each node can consist of one of the following operations +, -, *, }\\sqrt{}, 1(.)^{-1}, .^{2}.",
+          "question_answer_latex": "\\text{Note: -1p for each wrong operator}",
+          "available_points": 1.5
+        }
+      ]
+    },
+    {
+      "title": "Problem 4 Convolutional Neural Networks and Receptive Field",
+      "total_points": 12,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) You are given a two dimensional input (e.g., a grayscale image). Consider the following convolutional kernels}\\\\ c_1 = \\frac{1}{9} \\begin{pmatrix} 1 & 1 & 1 \\\\ 1 & 1 & 1 \\\\ 1 & 1 & 1 \\end{pmatrix}, \\quad c_2 = \\begin{pmatrix} 1 & -1 \\\\ -1 \\end{pmatrix}. \\\\\\text{What are the effects of the filter kernels } c_1 \\text{ and } c_2 \\text{ when applied to the image?}",
+          "question_answer_latex": "c_1: \\text{ Local/box blur/smoothing kernel}, \\, \\text{c}_2: \\text{ vertical edge detector}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{b) Given a Convolution Layer in a network with 5 filters, filter size of 7, a stride of 3, and a padding of 1. }\\text{ For an input feature map of } 26 \\times 26 \\times 26, \\text{ what is the output dimensionality after applying }\\text{the Convolution Layer to the input?}",
+          "question_answer_latex": "8 \\times 8 \\times 5",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{c) You are given a convolutional layer with 4 filters, kernel size 5, stride 1, and no padding that operates on an RGB image.} \\\\ \\begin{enumerate} \\item \\text{What is the shape of its weight tensor?} \\item \\text{Name all dimensions of your weight tensor.} \\end{enumerate}",
+          "question_answer_latex": "\\text{Shape: (3, 4, 5, 5) or (4,3,5,5), Reasoning: input size/rgb channels, output size/channels,} \\\\ \\text{width, height}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) A convolutional neural network consists of 3 consecutive } 3 \\times 3 \\text{ convolutional layers with stride 1}\\text{and no padding. How large is the receptive field of a feature in the last layer of this network?}",
+          "question_answer_latex": "1 \\times 1 \\to 3\\times3 \\to 5\\times5 \\to 7\\times7",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{e) Consider a network consisting of a single layer.} \\begin{enumerate} \\item \\text{What layer choice has a receptive field of 1?} \\item \\text{What layer has a receptive field of the full image input?} \\end{enumerate}",
+          "question_answer_latex": "\\begin{align*} &\\text{1x1 convolution or identity} \\\\ &\\text{fully connected or conv/pooling layer with kernel size equals full input size (224x224)}\\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{f) Draw a ResNet block in the image above containing two linear layers, which you can represent by } l_1 \\text{ and } l_2.\\text{For simplicity, you don’t need to draw any non-linearities. Why does such a block improve the vanishing gradient} \\text{problem in deep neural networks?}",
+          "question_answer_latex": "\\text{Note: if image structure is correct but: i) arrow is missing or ii) \"+\" symbol is missing or not drawn correctly 0.5p.}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{g) For your above drawing, given the partial derivative of the residual block } R(x) = l_2(l_1(x)) \\text{ as } \\frac{\\partial R(x)}{\\partial x} = r,\\text{calculate } \\frac{\\partial H(x)}{\\partial x}.",
+          "question_answer_latex": "\\frac{\\partial H(x)}{\\partial x} = 1 + r",
+          "available_points": 2.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 5 Training a Neural Network",
+      "total_points": 15,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) How would you split your dataset and give a meaningful percentage as answer.}",
+          "question_answer_latex": "\\begin{align*} &\\text{0.5 pt: Train + Validation + Test (must mention all 3)} \\\\ &\\text{0.5 pt: meaningful percentages (training split must be } > 50\\%)\\end{align*}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{b) After visually inspecting the different splits in the dataset, you realize that the training set only contains}\\text{pictures taken during the day, whereas the validation set only has pictures taken at night. Explain what is the}\\text{issue and how you would correct it.}",
+          "question_answer_latex": "\\begin{align*} &\\text{Issue (1p):} \\\\ &\\text{0.5 pt: data from different distributions / mismatch and therefore} \\\\ &\\text{0.5 pt: bad generalization / high val error} \\\\ &\\text{How to correct (1p): mix training + validation data, shuffle, split again} \\\\ &\\text{=> data in all sets from same distribution}\\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{c) As you train your model, you realize that you do not have enough data. Unfortunately, the architects are}\\text{unable to collect more data so you have to temper the data. Provide 4 data augmentation techniques that}\\text{ can be used to overcome the shortage of data.}",
+          "question_answer_latex": "\\text{Rotation, cropping, flipping, adding noise, mirroring, ... (0.5p each, max 2p)}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) What is the saddle point and what is the problem with GD?}",
+          "question_answer_latex": "\\text{It is a point where gradient is zero but it is not a minima nor maxima (0.5). GD problem: optimization can} \\text{get stuck if we reach saddle point since the gradient there is zero (0.5)}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{e) While training your classifier you experience that loss only slowly converges and always plateaus}\\text{independent of the used learning rate. Now you want to use Stochastic Grading Descent (SGD) instead of} \\text{Gradient Descent (GD). What is an advantage of SGD compared to GD in dealing with saddle points?}",
+          "question_answer_latex": "\\text{SGD has noisier updates which can help escape from a saddle point or local minima}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{f) Explain the concept behind momentum in SGD}",
+          "question_answer_latex": "\\text{Avoid getting stuck in local minima or accelerate optimization}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{g) Why would one want to use larger mini-batches in SGD?}",
+          "question_answer_latex": "\\text{1p: make the gradients less noisy, only \"less noisy\" (not mentioning gradients) -> half a point}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{h) Why do we usually use small mini-batches in practice?}",
+          "question_answer_latex": "\\text{Limited GPU memory}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{i) There exists a whole zoo of different optimizers. Name an optimizer that uses both first and second order moment}",
+          "question_answer_latex": "\\text{Adam} ",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{j) Choosing a reasonable learning rate is not easy.} \\begin{enumerate} \\item \\text{Name a problem that will result from using a learning rate that is too high.} \\item \\text{Name a problem that will arise from using a learning rate that is too low?} \\end{enumerate}",
+          "question_answer_latex": "\\begin{align*} &\\text{Too high: cost function does not converge to an optimal solution and can even diverge.} \\\\ &\\text{Too low: cost function may not converge to an optimal solution, or will converge after a very long time.}\\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{k) Finally you plot the loss curves with a suitable learning rate for both training data and validation data.}\\text{What's the issue of period 2 called? Name a possible actions that you could do without changing the number}\\text{ of parameters in your network to counteract this problem.}",
+          "question_answer_latex": "\\text{Issue: Model is overfitting (Note: generalization gap only is not enough) (1p).}\\text{Action: weight decay or drop out, data augmentation (1p) Note: if only regularization 0.5p}",
+          "available_points": 2.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 6 Recurrent Neural Networks and Backpropagation",
+      "total_points": 9,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Given the dimensions } x_t\\in\\mathbb{R}^3 \\text{ and } h_t\\in\\mathbb{R}^5, \\text{ what is the number of parameters in the RNN cell? (Calculate final number)}",
+          "question_answer_latex": "\\text{3} \\times 5 + 5 \\times 5 + 5 (\\text{bias}) = 15 + 25 + 5 = 45 \\,(1p \\text{ for 45, else 0})",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{b) If } x_t \\text{ and } b \\text{ are the 0 vector, then } h_t = h_{t-1} \\text{ for any value of } h_t. \\text{ Discuss whether this statement is correct.}",
+          "question_answer_latex": "\\text{False: (0.5p) After transformation with } V \\text{ and non-linearity } x_t = 0 \\text{ does not lead to } h_t = h_{t-1}, \\text{ i.e. } h_t \\text{ can be changed.}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{Now consider the following one-dimensional ReLU-RNN cell without bias}\\,b.\\\\ h_t = \\text{ReLU}(V \\cdot h_{t−1} + W \\cdot x_t) \\\\ \\text{(Hidden state, input, and weights are scalars)}",
+          "question_answer_latex": "\\text{Calculate } h_2 \\text{ and } h_3 \\text{ where} \\, V = −3, W = 3, h_{0} = 0, x_1 = 2, x_2 = 3 \\, \\text{and} \\, x_3 = 1.",
+          "available_points": 0.0
+        },
+        {
+          "question_text_latex": "\\text{c) Calculate } h_2 \\text{ and } h_3 \\text{ where } V = −3, W = 3, h_0 = 0, x_1 = 2, x_2 = 3 \\text{ and } x_3 = 1.",
+          "question_answer_latex": "\\begin{align*} h_0 &= 0 \\\\ h_1 &= \\text{relu}{(−3 * 0 + 3 * 2)} = 6 \\\\ h_2 &= \\text{relu}{(−3 * 6 + 3 * 3)} = 0 \\\\ h_3 &= \\text{relu}{(−3 * 0 + 3 * 1)} = 3 \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) Calculate the derivatives } \\frac{\\partial h_3}{\\partial V}, \\frac{\\partial h_3}{\\partial W}, \\text{ and } \\frac{\\partial h_3}{\\partial x_1} \\text{ for the forward pass of the}\\text{ ReLU-RNN where} \\\\ V = -2, W = 1, h_0 = 2, x_1 = 2, x_2 = \\frac{3}{2} \\text{ and } x_3 = 4. \\\\ \\text{for the forward outputs } \\begin{align*} &h_1 = 0, \\\\ &h_2 = \\frac{3}{2}, \\\\ &h_3 = 1. \\end{align*}",
+          "question_answer_latex": "\\begin{align*} \\frac{\\partial h_3}{\\partial V} &= h_2 + V \\cdot h_1 = \\frac{3}{2} + 0 = \\frac{3}{2} \\\\ \\frac{\\partial h_3}{\\partial W} &= V \\cdot x_2 + x_3 = -2\\cdot\\frac{3}{2} + 4 = 1 \\\\ \\frac{\\partial h_3}{\\partial x_1} &= 0 \\text{ (dead ReLU )} \\end{align*}",
+          "available_points": 3.0
+        },
+        {
+          "question_text_latex": "\\text{e) A Long-Short Term Memory (LSTM) unit is defined as}\\begin{align*} g_1 =& \\sigma (W_1 \\cdot x_t + U_1 \\cdot h_{t−1}), \\\\ g_2 =& \\sigma (W_2 \\cdot x_t + U_2 \\cdot h_{t−1}), \\\\ g_3 =& \\sigma (W_3 \\cdot x_t + U_3 \\cdot h_{t−1}), \\\\ \\tilde{c_t} =& \\tanh(W_c \\cdot x_t + U_c \\cdot h_{t−1}), \\\\ c_t =& g_2 \\circ c_{t−1} + g_3 \\circ \\tilde{c_t}, \\\\ h_t =& g_1 \\circ c_t, \\end{align*}\\text{where}\\, g_1, \\ g_2, \\ g_3 \\text{ are the gates of the LSTM cell.} \\begin{enumerate}\\item \\text{Assign these gates correctly to the forget} \\,f,\\, \\text{update}\\,u,\\text{ and} \\, \\text{output}\\,o\\text{ gates.} \\item \\text{What does the value } c_t \\text{ represent in a LSTM? (1p)} \\end{enumerate}",
+          "question_answer_latex": "\\begin{align*} &g_1 = \\text{output gate} \\, g_2 = \\text{forget gate} \\, g_3 = \\text{update gate/input gate} \\\\ &c_t \\text{ cell state/memory} \\end{align*}",
+          "available_points": 2.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 7 Autoencoder and Network Transfer",
+      "total_points": 11,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Is an autoencoder an example of unsupervised learning or supervised learning?}",
+          "question_answer_latex": "\\text{unsupervised learning }",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{b) As the data gets scaled down from the original dimension to a lower-dimensional bottleneck, an autoencoder}\\text{ can be used for data compression. How does an autoencoder as described above differ from linear methods to reduce the}\\text{dimensionality of the data such as PCA (principal component analysis)?}",
+          "question_answer_latex": "\\text{An autoencoder built of neural networks (containing non-linearities) is a non-linear function}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{c) For an autoencoder we can vary the size of the bottleneck. Discuss briefly what may happen if} \\\\ \\begin{enumerate} \\item \\text{the latent space is too small.} \\item \\text{the latent space is too big} \\end{enumerate}",
+          "question_answer_latex": "\\begin{align*} &\\text{(i) too small: loss of information/bad reconstruction quality/too much compression/extraction/blurry/underfitting} \\ldots \\,(1p) \\\\ &\\text{(ii) too big: too little compression/extraction/overfitting/poor generalization/learned identity mapping/memorizes the inputs} \\ldots \\,(1p) \\\\ \\end{align*}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d) Now, you want to generate a random image of a coin. To do so, can you just randomly sample a vector from the latent space}\\text{to generate a new coin image?}",
+          "question_answer_latex": "\\begin{align*} \\text{No (0.5p), network does not project input distribution surjectively into latent space}\\\\ \\text{decoder will not project all latent space vectors to coin images (0.5)} \\end{align*}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{e) Now, someone gives you 1,000 images that are annotated for semantic segmentation of coin and}\\text{background as shown in the image above. How would you change the architecture of the discussed autoencoder network}\\text{to perform semantic segmentation?}",
+          "question_answer_latex": "\\text{Replace the last layer of the of the autoencoder/ decoder (0.5p) to output 1 or 2 channels (0.5p)}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{f) If you wanted to train the new semantic segmentation network what loss function would you use and how?}",
+          "question_answer_latex": "\\text{(Binary) Cross Entropy loss/hinge loss (1p) on pixel level/ over channels/ depth-wise (1p) for the two classes (coin and background)}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{g) How would you leverage your pretrained autoencoder for training a new segmentation network efficiently?}",
+          "question_answer_latex": "\\text{Use pretrained encoder of autoencoder and discard decoder (1p)} \\\\\\text{(i) freeze weights of encoder or (ii) use very small learning rate for encoder during training for segmentation (1p)}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{h) Why do you expect the pretrained autoencoder variant to generalize more than a randomly initialized network?}",
+          "question_answer_latex": "\\text{access to much more data } 1p \\text{ (Note: can already detect features / features translate to other tasks 0.5p -> 1p for which features (encoder / low-level / shapes & edges / ...) \\has prior knowledge of coins 0.5p)}",
+          "available_points": 1.0
+        }
+      ]
+    },
+    {
+      "title": "Problem 8 Unsorted Short Questions",
+      "total_points": 11,
+      "sub_questions": [
+        {
+          "question_text_latex": "\\text{a) Why do we need activation functions in our neural networks?}",
+          "question_answer_latex": "\\text{Introduce non-linearity (1p), otherwise the network can be reduced to a single linear layer.}",
+          "available_points": 1.0
+        },
+        {
+          "question_text_latex": "\\text{b) You are solving the binary classification task of classifying images as cars vs. persons. You design a CNN }\\text{with a single output neuron. Let the output of this neuron be } z\\text{. The final output of your network, } \\hat{y} \\text{ is given by:}\\text{ } \\hat{y} = \\sigma (\\text{ReLU}(z)), \\text{where } \\sigma \\text{ denotes the sigmoid function. You classify all inputs with a final value } \\hat{y} \\geq 0.5 \\text{ as car images. What problem are you going to encounter?}",
+          "question_answer_latex": "\\text{As ReLU}(x) \\geq 0 \\text{ we get } \\sigma (\\text{ReLU}(z)) \\geq 0.5 \\;\\forall z (0.5p) \\\\ \\text{Classifier only predicts one class that is cars.}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{c) Suggest a method to solve exploding gradients when training fully-connected neural networks.}",
+          "question_answer_latex": "\\text{Gradient clipping/ better weight initialization (e.g. Xavier initialization)/ Batch normalization}",
+          "available_points": 2.0
+        },
+        {
+          "question_text_latex": "\\text{d)}",
+          "question_answer_latex": "\\text{}",
+          "available_points": 0.0
+        },
+        {
+          "question_text_latex": "\\text{e) Why do we often refer to L2-regularization as “weight decay”? Derive a the mathematical expression that includes}\\text{ the weights } W, \\text{ the learning rate }\\eta, \\text{ and the L2-regularization hyperparameter }\\lambda \\text{ to explain your point.}",
+          "question_answer_latex": "\\begin{align*} \\text{Weight update with objective function } J &\\text{ incl. weight decay:} \\\\ W &= W − \\eta \\nabla \\tilde{W} (J + \\frac{1}{2}\\frac{\\lambda}{\\eta}\\sum_j{W_j^2}) \\\\  W &= W(1 − \\eta\\lambda) − \\eta \\nabla \\tilde{W}J \\\\ &\\text{where } \\eta = \\text{learning rate and } \\lambda = \\text{regularization parameter} \\end{align*}",
+          "available_points": 3.0
+        },
+        {
+          "question_text_latex": "\\text{f) You are given input samples } x = (x_1, \\ldots, x_n) \\text{ for which each component } x_i \\text{ is drawn from a distribution with zero mean. This distribution has unit variance. For an input vector } x \\text{ the output } s = (s_1, \\ldots, s_n) \\text{ is given by}\\\\ s_i = \\sum_{j=1}^{n} W_{ij} \\cdot x_j,\\\\ \\text{where your weights w are initialized by a uniform random distribution } U(−\\alpha, \\alpha). \\\\ \\text{How do you have to choose } \\alpha \\text{ such that the variance of the input data and the output is identical, hence } \\text{Var}(s) = \\text{Var}(x)?} \\\\ \\text{Hints: For two statistically independent variables } X \\text{ and } Y \\text{ holds:} \\\\ \\text{Var}(X \\cdot Y) = [\\mathbb{E}(X) ]^2\\text{Var}(Y) + [\\mathbb{E}(Y)]^2\\text{Var}(X) + \\text{Var}(X)\\text{Var}(Y) \\\\ \\text{Furthermore the PDF of an uniform distribution } U(a,b) \\text{ is} \\\\ f(x) = \\begin{cases} \\frac{1}{b-a} &\\text{for } x\\in [a,b] \\\\ 0 & \\text{otherwise.} \\end{cases}\\\\ \\text{The variance of a continuous distribution is calculated as} \\\\ \\text{Var}(x) = \\int_{\\mathbb{R}} x^2 f(x) \\, dx − \\mu^2,\\,\\text{where }\\mu\\text{ is the expected value of } X.}",
+          "question_answer_latex": "\\begin{align*} &\\text{Var}(s) = \\text{Var}\\left(\\sum_{j=0}^{n} w_{ij} \\cdot x_j\\right) = \\sum_{j=0}^{n} \\text{Var}(w_{ij} \\cdot x_j) \\\\ &\\sum_{j=0}^{n} \\text{Var}(w_{ij} \\cdot x_j) = n \\cdot \\text{Var}(w \\cdot x) = n \\cdot \\text{Var}(w)\\cdot\\text{Var}(x) \\text{\\,(independence)} \\\\ &\\text{Var}(w) = \\frac{1}{3}\\alpha^2 \\\\ &n \\cdot \\frac{1}{3}\\alpha^2 = 1 \\Rightarrow \\alpha = \\sqrt{\\frac{3}{n}} \\end{align*}",
+          "available_points": 4.0
+        }
+      ]
+    }
+  ]
+}
