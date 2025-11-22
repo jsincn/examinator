@@ -1,6 +1,18 @@
 from jinja2 import Environment, FileSystemLoader
 from data_model import MultipleChoiceExamQuestion
 import os
+import unicodedata
+
+def strip_non_ascii(text):
+    """Remove or replace non-ASCII characters with ASCII equivalents."""
+    if not text:
+        return text
+    
+    # First try to normalize to ASCII equivalents
+    normalized = unicodedata.normalize('NFKD', text)
+    # Encode to ASCII, replacing non-ASCII with closest equivalent or removing
+    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
+    return ascii_text
 
 def render_mc_problem(exam_question: MultipleChoiceExamQuestion, problem_number: int, template_path: str = "templates/mc_problem_template.jinja2") -> str:
     """
@@ -19,6 +31,15 @@ def render_mc_problem(exam_question: MultipleChoiceExamQuestion, problem_number:
     template_name = os.path.basename(template_path)
     
     env = Environment(loader=FileSystemLoader(template_dir))
+    
+    # Add custom filter to handle non-ASCII characters
+    def fix_text(text):
+        if text:
+            return strip_non_ascii(text)
+        return text
+    
+    env.filters['fix_text'] = fix_text
+    
     template = env.get_template(template_name)
     
     # Prepare template context

@@ -11,6 +11,8 @@ from data_model import (
 from build_exam import build_exam
 from dotenv import load_dotenv
 
+from parsing_new import parse_exam_complete
+
 load_dotenv()
 
 
@@ -563,7 +565,7 @@ with left_col:
                 time.sleep(0.15)
             
             # Build the exam with status updates
-            exam = get_dummy_exam()
+            exam = parse_exam_complete(uploaded_file)
             exam_path, solution_path = build_exam(exam, status_callback=update_status)
             
             # Final update: show completed step

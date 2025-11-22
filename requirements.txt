@@ -1,6 +1,7 @@
-openai
+google-generativeai
 streamlit
 jinja2
+openai
+python-dotenv
 pydantic
-openai>=1.0.0
-python-dotenv>=1.0.0
+pymupdf

@@ -3,7 +3,7 @@
 
 {% for idx, sub_question in sub_questions %}
 \subproblem[{{ sub_question.calculation_function|default('binary_mc') }}]{{'{'}}{{ sub_question.question_points }}{{'}'}}
-{{ sub_question.question_text_latex }}
+{{ sub_question.question_text_latex | fix_text }}
 {% if sub_question.show_mc_notes|default(false) %}
 \begin{center}
 	\mcnotes{}
@@ -11,7 +11,7 @@
 {% endif %}
 \begin{multiplechoice}
 {% for option_idx, option in enumerate(sub_question.question_options) %}
-	\item{% if option_idx in sub_question.question_correct_option_indices %}*{% endif %} {{ option }}{% if option_idx in sub_question.question_correct_option_indices and sub_question.show_corrections|default(false) and sub_question.option_corrections and option_idx < (sub_question.option_corrections|length) and sub_question.option_corrections[option_idx] %} \correction{{'{'}}{{ sub_question.option_corrections[option_idx] }}{{'}'}}{% endif %}
+	\item{% if option_idx in sub_question.question_correct_option_indices %}*{% endif %} {{ option | fix_text }}{% if option_idx in sub_question.question_correct_option_indices and sub_question.show_corrections|default(false) and sub_question.option_corrections and option_idx < (sub_question.option_corrections|length) and sub_question.option_corrections[option_idx] %} \correction{{'{'}}{{ sub_question.option_corrections[option_idx] | fix_text }}{{'}'}}{% endif %}
 
 {% endfor %}
 \end{multiplechoice}
