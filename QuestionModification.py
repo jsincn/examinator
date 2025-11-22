@@ -5,6 +5,9 @@ from typing import Iterable, Optional
 
 from openai import OpenAI
 
+from data_model import ExamQuestion, SubQuestion
+
+
 SYSTEM_PROMPT_SUBQUESTION = """
 You rewrite a single sub-question.
 Input JSON contains: question_text_latex, question_answer_latex, available_points.
@@ -38,18 +41,25 @@ def _client(api_key: Optional[str] = None) -> OpenAI:
     return OpenAI(api_key=key)
 
 
+def _copy_model(obj, update: dict):
+    """Compatibility helper for pydantic v1/v2 copy semantics."""
+    if hasattr(obj, "model_copy"):
+        return obj.model_copy(update=update)
+    return obj.copy(update=update)
+
+
 def _rewrite_sub_question(
-    sub_question: dict,
+    sub_question: SubQuestion,
     *,
     model: str,
     temperature: float,
     client: OpenAI,
-) -> dict:
+) -> SubQuestion:
     """Send only minimal sub-question content to the model and return rewritten fields."""
     payload = {
-        "question_text_latex": sub_question.get("question_text_latex", ""),
-        "question_answer_latex": sub_question.get("question_answer_latex", ""),
-        "available_points": sub_question.get("available_points", None),
+        "question_text_latex": sub_question.question_text_latex,
+        "question_answer_latex": sub_question.question_answer_latex,
+        "available_points": sub_question.available_points,
     }
 
     messages = [
@@ -69,15 +79,33 @@ def _rewrite_sub_question(
         raise RuntimeError("No content returned by the model for sub-question.")
 
     rewritten_fields = json.loads(content)
-    # Keep all original keys, replace only the rewritten ones.
-    updated = dict(sub_question)
-    updated["question_text_latex"] = rewritten_fields.get(
-        "question_text_latex", sub_question.get("question_text_latex", "")
-    )
-    updated["question_answer_latex"] = rewritten_fields.get(
-        "question_answer_latex", sub_question.get("question_answer_latex", "")
-    )
-    return updated
+    update_payload = {
+        "question_text_latex": rewritten_fields.get(
+            "question_text_latex", sub_question.question_text_latex
+        ),
+        "question_answer_latex": rewritten_fields.get(
+            "question_answer_latex", sub_question.question_answer_latex
+        ),
+    }
+    return _copy_model(sub_question, update=update_payload)
+
+
+def rewrite_exam_question(
+    exam_question: ExamQuestion,
+    *,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+    client: Optional[OpenAI] = None,
+) -> ExamQuestion:
+    """Rewrite a single ExamQuestion instance and return the rewritten instance."""
+    client = client or _client()
+
+    rewritten_sub_questions = [
+        _rewrite_sub_question(sub_q, model=model, temperature=temperature, client=client)
+        for sub_q in exam_question.sub_questions
+    ]
+
+    return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
 
 
 def rewrite_exam_question_json(
@@ -91,19 +119,11 @@ def rewrite_exam_question_json(
     Rewrite a single ExamQuestion JSON and return the rewritten JSON string.
     Only the sub-question text/answers are sent to the model; structure is preserved locally.
     """
-    exam_question = json.loads(exam_question_json)
-    client = client or _client()
-
-    rewritten_sub_questions = []
-    for sub_q in exam_question.get("sub_questions", []):
-        rewritten_sub = _rewrite_sub_question(
-            sub_q, model=model, temperature=temperature, client=client
-        )
-        rewritten_sub_questions.append(rewritten_sub)
-
-    updated_question = dict(exam_question)
-    updated_question["sub_questions"] = rewritten_sub_questions
-    return json.dumps(updated_question, indent=2, ensure_ascii=True)
+    exam_question = ExamQuestion.model_validate_json(exam_question_json)
+    rewritten = rewrite_exam_question(
+        exam_question, model=model, temperature=temperature, client=client
+    )
+    return rewritten.model_dump_json(indent=2, ensure_ascii=True)
 
 
 def rewrite_uef_exam(
@@ -123,13 +143,11 @@ def rewrite_uef_exam(
 
     rewritten_exercises = []
     for exercise in exercises:
-        rewritten = rewrite_exam_question_json(
-            json.dumps(exercise, ensure_ascii=True),
-            model=model,
-            temperature=temperature,
-            client=client,
+        eq = ExamQuestion.model_validate(exercise)
+        rewritten_eq = rewrite_exam_question(
+            eq, model=model, temperature=temperature, client=client
         )
-        rewritten_exercises.append(json.loads(rewritten))
+        rewritten_exercises.append(rewritten_eq.model_dump())
 
     exam = dict(exam)
     exam["exercises"] = rewritten_exercises
