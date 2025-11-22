@@ -2,15 +2,10 @@ import os
 import sys
 import logging
 from pathlib import Path
-from llama_index.core import (
-    SimpleDirectoryReader,
-    VectorStoreIndex,
-    Settings
-)
-from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.core.node_parser import SimpleNodeParser
 import chromadb
+from chromadb.config import Settings as ChromaSettings
+from openai import OpenAI
+from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 
 # Setup logging
@@ -19,6 +14,17 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Disable verbose OpenAI/urllib3 logs
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+# Suppress all other loggers
+for name in logging.root.manager.loggerDict:
+    if name not in ["__main__", __name__]:
+        logging.getLogger(name).setLevel(logging.CRITICAL)
 
 load_dotenv()
 
@@ -29,13 +35,34 @@ CHUNK_OVERLAP = 200
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 
-def ingest_script_for_rag(script_path: str) -> VectorStoreIndex:
+
+def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list:
+    """Split text into overlapping chunks."""
+    chunks = []
+    for i in range(0, len(text), chunk_size - overlap):
+        chunk = text[i:i + chunk_size]
+        if chunk.strip():
+            chunks.append(chunk)
+    return chunks
+
+
+def get_embedding(text: str) -> list:
+    """Get embedding for text using OpenAI."""
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL,
+        input=text
+    )
+    return response.data[0].embedding
+
+
+def ingest_script_for_rag(script_path: str) -> chromadb.Collection:
     """
-    Process a lecture script PDF and ingest it into the vector database using LlamaIndex.
+    Process a lecture script PDF and ingest it into ChromaDB.
     
     Pipeline:
     1. Load PDF
-    2. Split text using SimpleNodeParser (chunk_size=1000, overlap=200)
+    2. Split text into chunks (chunk_size=1000, overlap=200)
     3. Embed chunks using OpenAI text-embedding-3-small
     4. Store in ChromaDB and persist to disk
     
@@ -43,7 +70,7 @@ def ingest_script_for_rag(script_path: str) -> VectorStoreIndex:
         script_path (str): Path to the PDF file
         
     Returns:
-        VectorStoreIndex: The vector store index object
+        chromadb.Collection: The ChromaDB collection
         
     Raises:
         FileNotFoundError: If the script file doesn't exist
@@ -64,78 +91,76 @@ def ingest_script_for_rag(script_path: str) -> VectorStoreIndex:
         logger.error("OPENAI_API_KEY not found in environment variables")
         raise ValueError("OPENAI_API_KEY not configured")
     
-    logger.info(f"📄 Step 1: Loading PDF from {script_path}...")
+    logger.info(f"Step 1: Loading PDF from {script_path}...")
     try:
-        # Load PDF using SimpleDirectoryReader
-        documents = SimpleDirectoryReader(
-            input_files=[script_path]
-        ).load_data()
-        logger.info(f"✅ Loaded {len(documents)} documents")
+        # Extract text from PDF
+        text = ""
+        with open(script_path, "rb") as f:
+            reader = PdfReader(f)
+            logger.info(f"PDF has {len(reader.pages)} pages")
+            for page_num, page in enumerate(reader.pages):
+                page_text = page.extract_text()
+                if page_text:
+                    text += f"\n[Page {page_num + 1}]\n{page_text}"
     except Exception as e:
         logger.error(f"Failed to load PDF: {e}")
         raise
     
-    logger.info(f"🔗 Step 2: Setting up embeddings using {EMBEDDING_MODEL}...")
+    logger.info(f"Step 2: Splitting text into chunks (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})...")
     try:
-        # Configure embeddings
-        embed_model = OpenAIEmbedding(model=EMBEDDING_MODEL)
-        Settings.embed_model = embed_model
-        logger.info(f"✅ Embeddings model initialized")
+        chunks = chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP)
+        logger.info(f"Created {len(chunks)} chunks")
     except Exception as e:
-        logger.error(f"Failed to initialize embeddings: {e}")
-        raise
-    
-    logger.info(f"📝 Step 3: Parsing and chunking text (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})...")
-    try:
-        # Configure node parser for chunking
-        node_parser = SimpleNodeParser.from_defaults(
-            chunk_size=CHUNK_SIZE,
-            chunk_overlap=CHUNK_OVERLAP,
-            separator="\n\n"
-        )
-        Settings.node_parser = node_parser
-        logger.info(f"✅ Node parser configured")
-    except Exception as e:
-        logger.error(f"Failed to configure node parser: {e}")
+        logger.error(f"Failed to split documents: {e}")
         raise
     
     # Ensure output directory exists
     Path(DB_DIR).mkdir(parents=True, exist_ok=True)
     
-    logger.info(f"💾 Step 4: Storing in ChromaDB ({DB_DIR})...")
+    logger.info(f"Step 3: Creating embeddings and storing in ChromaDB...")
     try:
-        # Initialize Chroma client
-        chroma_client = chromadb.PersistentClient(path=DB_DIR)
-        chroma_collection = chroma_client.get_or_create_collection(
+        # Initialize ChromaDB client
+        chroma_client = chromadb.PersistentClient(
+            path=DB_DIR,
+            settings=ChromaSettings(anonymized_telemetry=False)
+        )
+        
+        # Get or create collection
+        collection = chroma_client.get_or_create_collection(
             name="lecture_script",
             metadata={"hnsw:space": "cosine"}
         )
         
-        # Create vector store
-        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        # Add chunks with embeddings
+        logger.info(f"Embedding and storing {len(chunks)} chunks...")
+        for i, chunk in enumerate(chunks):
+            if i % 10 == 0:
+                logger.info(f"   Processing chunk {i + 1}/{len(chunks)}...")
+            
+            embedding = get_embedding(chunk)
+            
+            collection.add(
+                ids=[f"chunk_{i}"],
+                embeddings=[embedding],
+                documents=[chunk],
+                metadatas=[{"source": script_path, "chunk_index": i}]
+            )
         
-        # Create index
-        index = VectorStoreIndex.from_documents(
-            documents=documents,
-            vector_store=vector_store,
-            show_progress=True
-        )
-        
-        logger.info(f"✅ Vector store persisted to {DB_DIR}")
+        logger.info(f"Stored all chunks in ChromaDB at {DB_DIR}")
     except Exception as e:
         logger.error(f"Failed to create vector store: {e}")
         raise
     
-    logger.info("🎉 RAG ingestion pipeline completed successfully!")
-    return index
+    logger.info("RAG ingestion pipeline completed successfully!")
+    return collection
 
 
-def load_vector_store() -> VectorStoreIndex:
+def load_vector_store() -> chromadb.Collection:
     """
-    Load an existing vector store from disk using LlamaIndex.
+    Load an existing vector store from disk.
     
     Returns:
-        VectorStoreIndex: The loaded vector store index
+        chromadb.Collection: The loaded ChromaDB collection
         
     Raises:
         FileNotFoundError: If the database doesn't exist
@@ -146,23 +171,53 @@ def load_vector_store() -> VectorStoreIndex:
     
     logger.info(f"Loading vector store from {DB_DIR}...")
     try:
-        # Configure embeddings
-        embed_model = OpenAIEmbedding(model=EMBEDDING_MODEL)
-        Settings.embed_model = embed_model
-        
-        # Load Chroma client
-        chroma_client = chromadb.PersistentClient(path=DB_DIR)
-        chroma_collection = chroma_client.get_collection(name="lecture_script")
-        
-        # Create vector store from existing collection
-        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-        index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
-        
-        logger.info(f"✅ Vector store loaded")
-        return index
+        chroma_client = chromadb.PersistentClient(
+            path=DB_DIR,
+            settings=ChromaSettings(anonymized_telemetry=False)
+        )
+        collection = chroma_client.get_collection(name="lecture_script")
+        logger.info(f"Vector store loaded with {collection.count()} chunks")
+        return collection
     except Exception as e:
         logger.error(f"Failed to load vector store: {e}")
         raise
+
+
+def retrieve_context(query: str, top_k: int = 3) -> str:
+    """
+    Retrieve relevant chunks from the vector store for a query.
+    
+    Args:
+        query (str): The query text
+        top_k (int): Number of top chunks to retrieve
+        
+    Returns:
+        str: Concatenated relevant chunks as context
+    """
+    try:
+        collection = load_vector_store()
+        
+        # Get embedding for query
+        query_embedding = get_embedding(query)
+        
+        # Query the collection
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k
+        )
+        
+        # Extract and concatenate documents
+        if results and results["documents"]:
+            context = "\n---\n".join(results["documents"][0])
+            logger.info(f"Retrieved {len(results['documents'][0])} relevant chunks")
+            return context
+        else:
+            logger.warning("No relevant chunks found")
+            return ""
+            
+    except Exception as e:
+        logger.error(f"Failed to retrieve context: {e}")
+        return ""
 
 
 if __name__ == "__main__":
@@ -176,5 +231,5 @@ if __name__ == "__main__":
     try:
         ingest_script_for_rag(SCRIPT_PATH)
     except Exception as e:
-        logger.error(f"❌ RAG Ingestion failed: {e}")
+        logger.error(f"RAG Ingestion failed: {e}")
         sys.exit(1)
