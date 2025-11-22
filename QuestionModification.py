@@ -58,45 +58,47 @@ def _rewrite_sub_question(
     context_sub_questions: list[SubQuestion],
 ) -> SubQuestion:
     """Send only minimal sub-question content to the model and return rewritten fields."""
-    payload = {
-        "question_text_latex": sub_question.question_text_latex,
-        "question_answer_latex": sub_question.question_answer_latex,
-        "available_points": sub_question.available_points,
-        "variation": variation,
-        "previous_sub_questions": [
-            {
-                "question_text_latex": cq.question_text_latex,
-                "question_answer_latex": cq.question_answer_latex,
-                "available_points": cq.available_points,
-            }
-            for cq in context_sub_questions
-        ],
-    }
+    context_info = ""
+    if context_sub_questions:
+        context_info = "\n\nPrevious sub-questions in this exam question:\n"
+        for i, cq in enumerate(context_sub_questions, 1):
+            context_info += f"\n{i}. {cq.question_text_latex}"
+            context_info += f"\n   Answer: {cq.question_answer_latex}"
+            context_info += f"\n   Points: {cq.available_points}\n"
+
+    user_prompt = f"""Generate a new sub-question based on the following:
+
+Original question: {sub_question.question_text_latex}
+Original answer: {sub_question.question_answer_latex}
+Available points: {sub_question.available_points}
+Variation level: {variation}/10
+
+Variation guide:
+- 0: Only adjust numbers, keep wording and task identical
+- 5: Moderate changes to wording and approach, same difficulty
+- 10: Completely new task, same difficulty and workload{context_info}
+
+Respond ONLY with JSON: {{"question_text_latex": "...", "question_answer_latex": "..."}}"""
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT_SUBQUESTION},
-        {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
+        {"role": "user", "content": user_prompt},
     ]
 
-    completion = client.chat.completions.create(
-        model=model,
+    response = client.beta.chat.completions.parse(
+        model="gpt-4o-mini",
         messages=messages,
         temperature=temperature,
-        response_format={"type": "json_object"},
+        response_format=SubQuestion,  # Hilfsmodell
     )
 
-    content = completion.choices[0].message.content
-    if not content:
-        raise RuntimeError("No content returned by the model for sub-question.")
+    parsed = response.choices[0].message.parsed
+    if not parsed:
+        raise RuntimeError("Failed to parse rewritten sub-question from model response.")
 
-    rewritten_fields = json.loads(content)
     update_payload = {
-        "question_text_latex": rewritten_fields.get(
-            "question_text_latex", sub_question.question_text_latex
-        ),
-        "question_answer_latex": rewritten_fields.get(
-            "question_answer_latex", sub_question.question_answer_latex
-        ),
+        "question_text_latex": parsed.question_text_latex,
+        "question_answer_latex": parsed.question_answer_latex,
     }
     return _copy_model(sub_question, update=update_payload)
 
