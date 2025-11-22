@@ -1,19 +1,35 @@
 import os
+import logging
 from openai import OpenAI
 from data_model import MultipleChoiceExamQuestion
 import streamlit as st
+
+logger = logging.getLogger(__name__)
 
 def generate_exam_question_with_openai(
     original_question: MultipleChoiceExamQuestion,
     variation_instruction: str = "Generate a similar question with different numbers and context",
     variation: int = 5,
     temperature: float = 0.7,
+    use_script_context: bool = False,
 ) -> MultipleChoiceExamQuestion:
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
     import json
     original_json = json.dumps(original_question.model_dump(), indent=2)
+    
+    # Retrieve context from RAG if enabled
+    context_section = ""
+    if use_script_context:
+        try:
+            from ragpipeline import retrieve_context
+            question_text = original_question.sub_questions[0].question_text_latex if original_question.sub_questions else ""
+            context_text = retrieve_context(question_text, top_k=3)
+            if context_text:
+                logger.info(f"Retrieved context from lecture script")
+                context_section = f"\n\nRELEVANT COURSE MATERIAL:\n{context_text}\n"
+        except Exception as e:
+            logger.warning(f"Could not retrieve context: {e}")
 
     messages = [
         {
@@ -24,6 +40,7 @@ def generate_exam_question_with_openai(
                 "RULES:\n"
                 "1. Output ONLY JSON. No prose, no explanations.\n"
                 "2. The JSON must match the exact Pydantic schema of MultipleChoiceExamQuestion.\n"
+                + context_section +
                 "3. All LaTeX must be inside double-quoted strings and escape backslashes.\n"
                 "4. Never include comments, Markdown, or text outside the JSON.\n"
                 "5. Every sub-question must have the same number of options as in the input.\n"
@@ -76,6 +93,6 @@ def generate_exam_question_with_openai(
     return parsed
 
 
-def modify_mp_questions(exam_question: MultipleChoiceExamQuestion):
+def modify_mp_questions(exam_question: MultipleChoiceExamQuestion, use_script_context: bool = False):
     """Generate new multiple-choice exam questions based on existing ones."""
-    return generate_exam_question_with_openai(exam_question)
+    return generate_exam_question_with_openai(exam_question, use_script_context=use_script_context)
