@@ -1,0 +1,53 @@
+{
+  "total_points": 12,
+  "total_time_min": 30,
+  "exercises": [
+    {
+      "total_points": 12,
+      "sub_questions": [
+        {
+          "question_text_latex": "a) Analyze the impact of two different convolutional kernels applied to a two-dimensional input, such as a grayscale image. What is the effect of each kernel?\\n\\nKernel D1: $\\frac{1}{16} \\begin{bmatrix} 1 & 1 & 1 & 1 \\\\ 1 & 1 & 1 & 1 \\\\ 1 & 1 & 1 & 1 \\\\ 1 & 1 & 1 & 1 \\end{bmatrix}$\\n\\nKernel D2: $\\begin{bmatrix} 1 & -1 & 0 \\\\ 1 & -1 & 0 \\end{bmatrix}$",
+          "question_answer_latex": "Kernel D1 softens the image, while Kernel D2 emphasizes horizontal edges.",
+          "available_points": 2,
+          "solver_metadata": {
+            "agreement": false,
+            "iterations": 1,
+            "solver_answers": [
+              "C1: Smoothing (averaging); C2: Sharpening (edge enhancement)",
+              "Kernel C1 blurs the image, and Kernel C2 detects vertical edges.",
+              "C1: Smoothing; C2: Edge detection."
+            ]
+          }
+        },
+        {
+          "question_text_latex": "b) Consider a Convolution Layer with 5 filters, each having a size of 7, a stride of 3, and padding of 1, processing an input feature map of dimensions $26 \\times 26 \\times 26$. What will be the dimensions of the output?",
+          "question_answer_latex": "8 x 8 x 5",
+          "available_points": 2,
+          "solver_metadata": {
+            "agreement": true,
+            "iterations": 1,
+            "solver_answers": [
+              "\\(8 \\times 8 \\times 5\\)",
+              "The output dimensionality is \\( 8 \\times 8 \\times 5 \\).",
+              "\\( 8 \\times 8 \\times 5 \\)"
+            ]
+          }
+        },
+        {
+          "question_text_latex": "c) A convolutional layer processes an RGB image using 4 filters, with a kernel size of 5, a stride of 1, and no padding.\\n\\n1) What dimensions does its weight tensor have?\\n\\n2) List all the dimensions of the weight tensor you identified.",
+          "question_answer_latex": "(4, 3, 5, 5)",
+          "available_points": 2,
+          "solver_metadata": {
+            "agreement": false,
+            "iterations": 1,
+            "solver_answers": [
+              "(4, 3, 5, 5)",
+              "The shape of the weight tensor is (5, 5, 3, 4) with dimensions representing height, width, channels, and number of filters.",
+              "(4, 3, 5, 5)"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

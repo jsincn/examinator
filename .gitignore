@@ -203,6 +203,7 @@ cython_debug/
 # Local samples
 sample_exam.json
 test.py
+test-martin.py
 .cursorindexingignore
 
 # Marimo
