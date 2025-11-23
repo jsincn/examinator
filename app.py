@@ -603,54 +603,6 @@ with right_col:
             mime="application/pdf"
         )
         
-        # RAG-based question generation section
-        if st.session_state.get("use_rag") and 'parsed_exam' in st.session_state:
-            st.markdown("---")
-            st.markdown("#### Generate Question Variations with RAG")
-            
-            with st.expander("🔄 Generate new questions using lecture context"):
-                st.info("This will generate variations of the exam questions using context from the uploaded lecture script.")
-                
-                # Get exam from session state
-                exam = st.session_state['parsed_exam']
-                
-                # Get list of questions from the parsed exam
-                questions = exam.questions if hasattr(exam, 'questions') else []
-                
-                if questions:
-                    question_options = [f"Question {i+1}: {q.title if hasattr(q, 'title') else 'Untitled'}" for i, q in enumerate(questions)]
-                    selected_question_idx = st.selectbox("Select a question to generate variations", 
-                                                         range(len(questions)),
-                                                         format_func=lambda x: question_options[x])
-                    
-                    variation_level = st.slider("Variation level (0=minor changes, 10=completely new)", 0, 10, 5)
-                    
-                    if st.button("✨ Generate Variation with RAG Context"):
-                        try:
-                            # Get selected question
-                            selected_q = questions[selected_question_idx]
-                            
-                            # Only works with MultipleChoiceExamQuestion
-                            if isinstance(selected_q, MultipleChoiceExamQuestion):
-                                # Generate variation with RAG
-                                with st.spinner("Generating variation with RAG context..."):
-                                    variation = generate_exam_question_with_openai(
-                                        selected_q,
-                                        variation_instruction=f"Generate a variation of this question. Use context from the lecture script.",
-                                        variation=variation_level,
-                                        use_script_context=True
-                                    )
-                                
-                                st.success("✅ Variation generated successfully!")
-                                
-                                # Display the variation
-                                st.json(variation.model_dump())
-                            else:
-                                st.warning("This question type is not yet supported for RAG variations")
-                        except Exception as e:
-                            st.error(f"❌ Error generating variation: {e}")
-                else:
-                    st.warning("No questions found in exam")
 
 # # Right column - Exam Details (will be populated when exam is built)
 # with right_col:
