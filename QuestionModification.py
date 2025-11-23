@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 from pathlib import Path
 import streamlit as st
 from typing import Iterable, Optional
@@ -8,6 +9,8 @@ from openai import OpenAI
 
 from data_model import ExamQuestion, SubQuestion
 
+logger = logging.getLogger(__name__)
+
 
 SYSTEM_PROMPT_SUBQUESTION = """
 You generate a new single sub-question based on an old question you get provided.
@@ -15,6 +18,17 @@ Input JSON contains: question_text_latex, question_answer_latex, available_point
 0 means only adjust numbers while keeping wording and task essentially identical; 10 means a completely new task while keeping the same difficulty and amount of work needed to solve.
 Rewrite according to the variation level and update question_answer_latex accordingly.
 Respond ONLY with JSON: {"question_text_latex": "...", "question_answer_latex": "..."}.
+"""
+
+SYSTEM_PROMPT_ONE_GO = """
+You rewrite an entire ExamQuestion in one step.
+Input JSON contains: total_points, question_title, question_description_latex, sub_questions[*], variation (0-10).
+0 means only adjust numbers while keeping wording and task identical; 10 means a completely different task(nothing to do with the old one use skript context) while keeping the same difficulty and workload.
+Rules:
+- Preserve structure and fields (total_points, question_title, question_description_latex, sub_questions with available_points, etc.).
+- Keep the number of sub_questions and their available_points intact.
+- Rewrite question_text_latex and question_answer_latex according to variation; title/description must align with the new sub-questions and include concrete givens/parameters.
+- Respond ONLY with valid JSON matching the ExamQuestion schema.
 """
 
 
@@ -131,3 +145,58 @@ def rewrite_exam_question(
         )
 
     return _copy_model(exam_question, update={"sub_questions": rewritten_sub_questions})
+
+
+def rewrite_exam_question_one_go(
+    exam_question: ExamQuestion,
+    *,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+    variation: int = 5,
+    client: Optional[OpenAI] = None,
+    use_script_context: bool = False,
+) -> ExamQuestion:
+    """
+    Rewrite a full ExamQuestion in a single LLM call (no per-subquestion iteration).
+    Preserves structure via the Pydantic model and returns a new ExamQuestion.
+    """
+    client = client or _client()
+    variation = max(0, min(variation, 10))
+
+    payload = exam_question.model_dump()
+    payload["variation"] = variation
+
+    context_section = ""
+    if use_script_context:
+        try:
+            from ragpipeline import retrieve_context
+
+            first_text = (
+                exam_question.sub_questions[0].question_text_latex
+                if exam_question.sub_questions
+                else exam_question.question_description_latex or ""
+            )
+            context_text = retrieve_context(first_text, top_k=3)
+            if context_text:
+                logger.info("Retrieved context from lecture script")
+                context_section = f"\n\nRELEVANT COURSE MATERIAL:\n{context_text}\n"
+        except Exception as e:
+            logger.warning(f"Could not retrieve context: {e}")
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT_ONE_GO + context_section},
+        {"role": "user", "content": json.dumps(payload, ensure_ascii=True)},
+    ]
+
+    response = client.beta.chat.completions.parse(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        response_format=ExamQuestion,
+    )
+
+    parsed = response.choices[0].message.parsed
+    if not parsed:
+        raise RuntimeError("Failed to parse rewritten ExamQuestion from model response.")
+
+    return parsed
