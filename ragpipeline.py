@@ -7,7 +7,7 @@ from chromadb.config import Settings as ChromaSettings
 from openai import OpenAI
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
-
+import streamlit as st
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,7 +35,7 @@ CHUNK_OVERLAP = 200
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 
-
+@st.cache_data()
 def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list:
     """Split text into overlapping chunks."""
     chunks = []
@@ -46,6 +46,7 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
     return chunks
 
 
+@st.cache_data()
 def get_embedding(text: str) -> list:
     """Get embedding for text using OpenAI."""
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -55,7 +56,7 @@ def get_embedding(text: str) -> list:
     )
     return response.data[0].embedding
 
-
+@st.cache_resource()
 def ingest_script_for_rag(script_path: str) -> chromadb.Collection:
     """
     Process a lecture script PDF and ingest it into ChromaDB.
@@ -154,7 +155,7 @@ def ingest_script_for_rag(script_path: str) -> chromadb.Collection:
     logger.info("RAG ingestion pipeline completed successfully!")
     return collection
 
-
+@st.cache_resource()
 def load_vector_store() -> chromadb.Collection:
     """
     Load an existing vector store from disk.
@@ -182,7 +183,7 @@ def load_vector_store() -> chromadb.Collection:
         logger.error(f"Failed to load vector store: {e}")
         raise
 
-
+@st.cache_data()
 def retrieve_context(query: str, top_k: int = 3) -> str:
     """
     Retrieve relevant chunks from the vector store for a query.

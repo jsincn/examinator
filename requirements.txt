@@ -5,3 +5,5 @@ openai
 python-dotenv
 pydantic
 PyMuPDF
+chromadb
+PyPDF2
