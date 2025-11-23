@@ -80,7 +80,9 @@ source .venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+5. Set your `OPENAI_API_KEY` environment variable
 5. Run Streamlit
 ```
 streamlit run app.py
 ```
+
